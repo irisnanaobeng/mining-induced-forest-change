@@ -106,7 +106,7 @@ true_color_panel <- (tc_2017 | tc_2020 | tc_2022) +
 true_color_panel
 ```
 
-<img src="forest_change_analysis_files/figure-gfm/true_color_panel-1.png" width="100%" />
+<img src="maps/true_color_panel-1.png" width="100%" />
 
 ``` r
 ggsave("maps/true_color_panel.png", true_color_panel, width = 15, height = 6, dpi = 300)
@@ -139,7 +139,7 @@ false_color_panel <- (fc_2017 | fc_2020 | fc_2022) +
 false_color_panel
 ```
 
-<img src="forest_change_analysis_files/figure-gfm/false_color_panel-1.png" width="100%" />
+<img src="maps/false_color_panel-1.png" width="100%" />
 
 ``` r
 ggsave("maps/false_color_panel.png", false_color_panel, width = 15, height = 6, dpi = 300)
@@ -285,7 +285,7 @@ change_map <- ggplot(change_df, aes(x = x, y = y, fill = class)) +
 change_map
 ```
 
-![](forest_change_analysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](maps/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 ggsave("maps/change_map_3class.png", plot = change_map, width = 10, height = 7, dpi = 300)

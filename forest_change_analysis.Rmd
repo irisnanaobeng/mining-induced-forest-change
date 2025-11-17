@@ -2,8 +2,12 @@
 title: "Mining-Induced Forest Change in Pra River Basin"
 author: "Iris Nana Obeng"
 date: "2025-11-17"
-output: html_document
+output: github_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path = "maps/")
+```
 
 ## 1. Load Required Packages
 
