@@ -1,7 +1,7 @@
 Mining-Induced Forest Change in Pra River Basin
 ================
 Iris Nana Obeng
-2025-11-17
+2025-11-18
 
 ## 1. Load Required Packages
 
@@ -36,7 +36,45 @@ library(RStoolbox)
 
     ## This is version 1.0.2.2 of RStoolbox
 
-## 2. Load Sentinel-2 Bands
+``` r
+## Enhanced ggplot-style imageRy function (im.ggplotRGB)
+im.ggplotRGB <- function(rgb_stack, r = 1, g = 2, b = 3, 
+                        stretch = "lin", title = "", downsample = 10) {
+  
+  # Downsample the raster first to reduce memory
+  rgb_small <- aggregate(rgb_stack, fact = downsample)
+  
+  # Convert only the downsampled version to data frame
+  rgb_df <- as.data.frame(rgb_small, xy = TRUE)
+  rgb_df <- na.omit(rgb_df)
+  
+  band_names <- names(rgb_df)[3:5]
+  
+  # Create ggplot
+  p <- ggplot() +
+    geom_raster(data = rgb_df, 
+                aes(x = x, y = y, 
+                    fill = rgb(
+                      get(band_names[r]), 
+                      get(band_names[g]), 
+                      get(band_names[b]),
+                      maxColorValue = max(c(get(band_names[r]), 
+                                          get(band_names[g]), 
+                                          get(band_names[b])), na.rm = TRUE)
+                    ))) +
+    scale_fill_identity() +
+    coord_equal() +
+    labs(title = title) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          axis.text = element_text(size = 8),
+          panel.grid = element_blank())
+  
+  return(p)
+}
+```
+
+## 2. Loading Sentinel-2 Bands
 
 ### 2017 Bands
 
@@ -65,7 +103,7 @@ red_2022   <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXM_20240506T0428
 nir_2022   <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXM_20240506T042828.SAFE/T30NXM_20220126T102209_B08_10m.jp2")
 ```
 
-## 3. Create Image Composites
+## 3. Image Composites
 
 \#RGB = True color \#NIR–R–G = False color (highlights vegetation
 health)
@@ -85,22 +123,30 @@ false_2022 <- c(nir_2022, red_2022, green_2022)
 ## 4. True Color Visualization
 
 ``` r
-tc_2017 <- ggRGB(rgb_2017, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2017") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+# Create plots using im.ggplotRGB function
+tc_2017 <- im.ggplotRGB(rgb_2017, title = "2017 - True Color")
+```
 
-tc_2020 <- ggRGB(rgb_2020, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2020") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+    ## |---------|---------|---------|---------|=========================================                                          
 
-tc_2022 <- ggRGB(rgb_2022, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2022") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+``` r
+tc_2020 <- im.ggplotRGB(rgb_2020, title = "2020 - True Color") 
+```
 
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+tc_2022 <- im.ggplotRGB(rgb_2022, title = "2022 - True Color")
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+# Combine using patchwork
 true_color_panel <- (tc_2017 | tc_2020 | tc_2022) +
   plot_annotation(
     title = "True Color RGB – Pra River Basin (2017, 2020, 2022)",
-    theme = theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
   )
 
 true_color_panel
@@ -118,22 +164,30 @@ ggsave("maps/true_color_panel.png", true_color_panel, width = 15, height = 6, dp
 vegetation appears bright red; stressed vegetation appears dull.
 
 ``` r
-fc_2017 <- ggRGB(false_2017, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2017") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+# Create plots using im.ggplotRGB function for false color
+fc_2017 <- im.ggplotRGB(false_2017, r = 1, g = 2, b = 3, title = "2017 - False Color")
+```
 
-fc_2020 <- ggRGB(false_2020, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2020") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+    ## |---------|---------|---------|---------|=========================================                                          
 
-fc_2022 <- ggRGB(false_2022, r=1, g=2, b=3, stretch="lin") +
-  ggtitle("2022") +
-  theme(plot.title = element_text(hjust = 0.5, size=12, face="bold"))
+``` r
+fc_2020 <- im.ggplotRGB(false_2020, r = 1, g = 2, b = 3, title = "2020 - False Color")
+```
 
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+fc_2022 <- im.ggplotRGB(false_2022, r = 1, g = 2, b = 3, title = "2022 - False Color")
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+# Combine using patchwork
 false_color_panel <- (fc_2017 | fc_2020 | fc_2022) +
   plot_annotation(
     title = "False Color (NIR-R-G): Vegetation Health",
-    theme = theme(plot.title = element_text(hjust=0.5, size=18, face="bold"))
+    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
   )
 
 false_color_panel
@@ -248,62 +302,176 @@ change[degraded] <- 2
 change_small <- aggregate(change, fact = 10, fun = modal, na.rm = TRUE)
 ```
 
-## 8. Final Change Map
+``` r
+mining_hotspots <- new_bare
+disturbed_vegetation <- degraded
+
+healthy_forest <- (ndvi_2022 > 0.45)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
 
 ``` r
-# Prepare data for plotting
-change_df <- as.data.frame(change_small, xy = TRUE)
-colnames(change_df) <- c("x", "y", "class")
+other_landcover <- !(mining_hotspots | disturbed_vegetation | healthy_forest)
+```
 
-change_df$class <- factor(change_df$class,
-                          levels = c(0, 1, 2),
-                          labels = c("No Change",
-                                     "Exposed Soil (Mining)",
-                                     "Degraded / Disturbed Vegetation"))
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          
 
+``` r
+# Create three separate rasters
+mining_raster <- ndvi_2022 * 0
+```
 
-# ---Plot change map ---
-change_map <- ggplot(change_df, aes(x = x, y = y, fill = class)) +
-  geom_raster() +
-  scale_fill_manual(values = c(
-    "No Change" = "honeydew1",
-    "Exposed Soil (Mining)" = "red",
-    "Degraded / Disturbed Vegetation" = "goldenrod1"
-  )) +
-  coord_equal() +
-  theme_minimal() +
-  labs(
-    title = "Mining-Induced Forest Vegetation Change (2017 → 2022)",
-    subtitle = "Pra River Basin — Exposed Soil & Disturbed Vegetation",
-    fill = "Class"
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+mining_raster[mining_hotspots] <- 1
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+disturbed_raster <- ndvi_2022 * 0  
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+disturbed_raster[disturbed_vegetation] <- 1
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+forest_health_raster <- ndvi_2022 * 0
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+forest_health_raster[healthy_forest] <- 1
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+forest_health_raster[other_landcover] <- 2
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+# Downsample for visualization
+mining_small <- aggregate(mining_raster, fact = 10, fun = modal, na.rm = TRUE)
+disturbed_small <- aggregate(disturbed_raster, fact = 10, fun = modal, na.rm = TRUE)
+forest_health_small <- aggregate(forest_health_raster, fact = 10, fun = modal, na.rm = TRUE)
+```
+
+## 8. Change Classification Maps
+
+# 1. Forest health map - show healthy forest areas
+
+# 2. Mining hotspots map - show exposed soil from mining
+
+# 3. Disturbed vegetation map - show degraded forest areas due to mining impacts
+
+``` r
+# Mining Hotspots Map
+mining_df <- as.data.frame(mining_small, xy = TRUE)
+mining_df <- na.omit(mining_df)
+colnames(mining_df) <- c("x", "y", "value")
+
+mining_map <- ggplot() +
+  geom_raster(data = mining_df, 
+              aes(x = x, y = y, fill = factor(value))) +
+  scale_fill_manual(
+    values = c("0" = "honeydew", "1" = "brown4"),
+    labels = c("Non-Active Mining Areas", "Active Mining Areas"),
+    name = "Land Cover Change"
   ) +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 13, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5, size = 11)
-  )
+  coord_equal() +
+  labs(
+    title = "Mining Expansion: Exposed Soil Areas (2017 → 2022)",
+    subtitle = "New areas of vegetation removal due to mining activities"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 10),
+        axis.text = element_text(size = 10),
+        panel.grid = element_blank())
 
-change_map
+# Disturbed Vegetation Map  
+disturbed_df <- as.data.frame(disturbed_small, xy = TRUE)
+disturbed_df <- na.omit(disturbed_df)
+colnames(disturbed_df) <- c("x", "y", "value")
+
+disturbed_map <- ggplot() +
+  geom_raster(data = disturbed_df, 
+              aes(x = x, y = y, fill = factor(value))) +
+  scale_fill_manual(
+    values = c("0" = "forestgreen", "1" = "yellow"),
+    labels = c("Healthy Vegetation", "Disturbed Vegetation"),
+    name = "Vegetation Status"
+  ) +
+  coord_equal() +
+  labs(title = "Disturbed Vegetation (2017-2022)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.text = element_text(size = 8),
+        panel.grid = element_blank())
+
+# Forest Health Map
+forest_health_df <- as.data.frame(forest_health_small, xy = TRUE)
+forest_health_df <- na.omit(forest_health_df)
+colnames(forest_health_df) <- c("x", "y", "value")
+forest_health_map <- ggplot() +
+  geom_raster(data = forest_health_df, 
+               aes(x = x, y = y, fill = factor(value))) +
+  scale_fill_manual(values = c("0" = "beige", "1" = "darkgreen", "2" = "tan"),
+                    labels = c("Other Land Uses", "Healthy Forest", "Vulnerable Areas"),
+    name = "Forest Conservation Status"
+  ) +
+  coord_equal() +
+  labs(
+    title = "Forest Conservation Status in Pra River Basin (2022)",
+    subtitle = "Identifying healthy forests and areas vulnerable to mining expansion") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.text = element_text(size = 10),
+        panel.grid = element_blank())
+
+# Display each map individually
+forest_health_map
 ```
 
-![](maps/unnamed-chunk-8-1.png)<!-- -->
+<img src="maps/change_maps-1.png" width="100%" />
 
 ``` r
-ggsave("maps/change_map_3class.png", plot = change_map, width = 10, height = 7, dpi = 300)
+mining_map
 ```
 
-## Results Summary
+<img src="maps/change_maps-2.png" width="100%" />
 
-This analysis successfully identifies three key change classes:
+``` r
+disturbed_map
+```
 
-- **Mining-Induced Bare Soil (Red)**: Areas of active mining showing
-  complete vegetation removal.
+<img src="maps/change_maps-3.png" width="100%" />
 
-- **Degraded/Disturbed Forest (Yellow)**: Forest areas under stress from
-  mining activities; reflects indirect mining impacts such as soil and
-  water pollution, partial canopy loss, or nearby mining disturbance.
+``` r
+# Save maps
+ggsave("maps/mining_hotspots_map.png", mining_map, width = 6, height = 6, dpi = 300)
+ggsave("maps/disturbed_vegetation_map.png", disturbed_map, width = 6, height = 6, dpi = 300)
+ggsave("maps/forest_health_map.png", forest_health_map, width = 6, height = 6, dpi = 300)
+```
 
-- **No Change (Light Cream)**: Stable forest vegetation unaffected by
-  mining
+## 9. Summary
 
-The workflow demonstrates the effectiveness of Sentinel-2 NDVI analysis
-for mapping mining impacts on forest ecosystems.
+This analysis utilized Sentinel-2 imagery to assess mining-induced
+forest changes in the Pra River Basin from 2017 to 2022. True color and
+false color composites highlighted visible changes and vegetation
+health. NDVI calculations identified areas of new exposed soil due to
+mining expansion and degraded vegetation. The resulting maps provide
+critical insights into the spatial extent of mining impacts on forest
+ecosystems, informing conservation and land management strategies.
+\`\`\`
