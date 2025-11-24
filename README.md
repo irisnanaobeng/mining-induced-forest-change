@@ -2,7 +2,7 @@
 Spatial Ecology Thesis - Assessing Mining-Induced Forest Change in Pra River Basin using Sentinel-2 imagery
 
 MSc Thesis – Global Change Ecology & Sustainable Development
-University of Bologna (UniBo), Italy
+University of Bologna (UniBo), Italy.
 Supervisor: Prof. Duccio Rocchini
 Department of Biological, Geological and Environmental Sciences (BiGeA)
 
