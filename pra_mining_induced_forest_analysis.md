@@ -152,44 +152,13 @@ True color images show the landscape as it appears to the human eye.
 This helps identify visible changes like deforestation and bare soil
 exposure.
 
-``` r
-  p_tc_2018 <- im.ggplotRGB(tc_2018, title = "True Colour 2018")
-```
+    ## |---------|---------|---------|---------|=========================================                                          
 
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  p_tc_2020 <- im.ggplotRGB(tc_2020, title = "True Colour 2020")
-```
-
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  p_tc_2022 <- im.ggplotRGB(tc_2022, title = "True Colour 2022")
-```
-
-    ## |---------|---------|---------|---------|=========================================                                          
-
-``` r
-combined_true_color <- (p_tc_2018 | p_tc_2020 | p_tc_2022) +
-  plot_annotation(
-    title = "True Colour Composites PRA Basin Forest (2018, 2020, 2022)",
-    theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
-    )
-  ) &
-  theme(
-    plot.margin = margin(5, 5, 5, 5)
-  )
-
-combined_true_color
-```
-
-![](maps/unnamed-chunk-7-1.png)<!-- -->
-
-``` r
-ggsave("maps/true_color_comparison.png", combined_true_color, width = 18, height = 6, dpi = 300, bg = "white")
-```
+![](maps/true-color-1.png)<!-- -->
 
 ## 7. False Color Visualization
 
@@ -198,44 +167,13 @@ vegetation appears bright red, water appears dark, and urban areas
 appear cyan. This is excellent for monitoring vegetation health and
 detecting stress.
 
-``` r
-  p_fc_2018 <- im.ggplotRGB(fc_2018, title = "False Colour 2018")
-```
+    ## |---------|---------|---------|---------|=========================================                                          
 
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  p_fc_2020 <- im.ggplotRGB(fc_2020, title = "False Colour 2020")
-```
-
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  p_fc_2022 <- im.ggplotRGB(fc_2022, title = "False Colour 2022")
-```
-
-    ## |---------|---------|---------|---------|=========================================                                          
-
-``` r
-combined_false_color <- (p_fc_2018 | p_fc_2020 | p_fc_2022) +
-  plot_annotation(
-    title = "False Colour Composites PRA Basin Forest (2018, 2020, 2022)",
-    theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
-    )
-  ) &
-  theme(
-    plot.margin = margin(5, 5, 5, 5)
-  )
-
-combined_false_color
-```
-
-![](maps/unnamed-chunk-8-1.png)<!-- -->
-
-``` r
-ggsave("maps/false_color_comparison.png", combined_false_color, width = 18, height = 6, dpi = 300, bg = "white")
-```
+![](maps/false-color-1.png)<!-- -->
 
 ## 8. NDVI Calculation and Analysis
 
@@ -273,125 +211,28 @@ values typically indicate water
 Visualizing NDVI to help identify areas of vegetation loss or
 degradation over time.
 
-``` r
-p_ndvi_2018 <- plot_singleband_gg(ndvi_2018, title = "NDVI 2018")
-```
+    ## |---------|---------|---------|---------|=========================================                                          
 
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-p_ndvi_2020 <- plot_singleband_gg(ndvi_2020, title = "NDVI 2020")
-```
-
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-p_ndvi_2022 <- plot_singleband_gg(ndvi_2022, title = "NDVI 2022")
-```
-
-    ## |---------|---------|---------|---------|=========================================                                          
-
-``` r
-combined_ndvi <- (p_ndvi_2018 | p_ndvi_2020 | p_ndvi_2022) +
-  plot_annotation(
-    title = "NDVI Time Series PRA Basin Forest (2018, 2020, 2022)",
-    theme = theme(
-      plot.title = element_text(
-        hjust = 0.5,
-        size = 16,
-        face = "bold"
-      )
-    )
-  ) &
-  theme(
-    plot.margin = margin(5, 5, 5, 5),
-    legend.position = "right"
-  )
-
-combined_ndvi
-```
-
-![](maps/unnamed-chunk-10-1.png)<!-- -->
-
-``` r
-ggsave("maps/ndvi_timeseries.png", combined_ndvi, 
-       width = 18, height = 8, dpi = 300, bg = "white")
-```
+![](maps/ndvi-change-1.png)<!-- -->
 
 ## 10. NDVI Change Detection
 
 Detecting significant changes in NDVI between 2018 and 2022 to identify
 areas of vegetation loss or gain.
 
-``` r
-  ndvi_diff_18_22 <- ndvi_2022 - ndvi_2018
-```
-
     ## |---------|---------|---------|---------|=========================================                                          
-
-``` r
-  ndvi_change_18_22_class <- ndvi_change_class(ndvi_diff_18_22)
-```
 
     ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  ndvi_change_discrete <- terra::aggregate(ndvi_change_18_22_class, fact = 8)
-```
+    ## |---------|---------|---------|---------|=========================================                                          
 
     ## |---------|---------|---------|---------|=========================================                                          
 
-``` r
-  df_change <- as.data.frame(ndvi_change_discrete, xy = TRUE, na.rm = TRUE)
-  colnames(df_change) <- c("x", "y", "class")
-  
-  df_change$class <- factor(df_change$class, 
-                           levels = c(0, 1, 2),
-                           labels = c("No Change", "Vegetation Increase", "Vegetation Decrease"))
-
-  p_ndvi_diff_18_22 <- plot_singleband_gg(ndvi_diff_18_22, 
-                                          title = "NDVI Difference (2022-2018)") +
-    scale_fill_gradient2(low = "red2", mid = "beige", high = "darkgreen", 
-                        midpoint = 0, name = "ΔNDVI")
-```
-
-    ## |---------|---------|---------|---------|=========================================                                          
-
-``` r
-  p_ndvi_change_18_22_class <- ggplot(df_change, aes(x = x, y = y, fill = class)) +
-    geom_raster() +
-    scale_fill_manual(
-      values = c("No Change" = "beige", 
-                "Vegetation Increase" = "darkgreen", 
-                "Vegetation Decrease" = "red2"),
-      name = "NDVI Change",
-      na.value = "white"
-    ) +
-    coord_equal() +
-    ggtitle("NDVI Change Classes (2018-2022)") +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5))
-
-  combined_ndvi_change <- (p_ndvi_diff_18_22 | p_ndvi_change_18_22_class) +
-  plot_annotation(
-    title = "NDVI Change Detection PRA Basin Forest (2018–2022)",
-    theme = theme(
-      plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
-    )
-  ) &
-  theme(
-    plot.margin = margin(5, 5, 5, 5)
-  )
-
-combined_ndvi_change
-```
-
-![](maps/unnamed-chunk-11-1.png)<!-- -->
-
-``` r
-  ggsave("maps/ndvi_change_detection_2018_2022.png", combined_ndvi_change, 
-         width = 20, height = 7, dpi = 300)
-```
+![](maps/vegetation-classification-1.png)<!-- -->
 
 ## 11. NDVI CHANGE BAR CHART ((Percentage of Study Area)
 
@@ -438,7 +279,7 @@ ndvi_change_bar <- ggplot(ndvi_change_summary,
 ndvi_change_bar
 ```
 
-![](maps/unnamed-chunk-12-1.png)<!-- -->
+![](maps/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 ggsave("maps/ndvi_change_percentage_bar_chart.png",ndvi_change_bar,width = 8,height = 6,dpi = 300)
@@ -578,7 +419,7 @@ change_map <- ggplot(df_class) +
 change_map
 ```
 
-![](maps/unnamed-chunk-13-1.png)<!-- -->
+![](maps/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 ggsave("maps/vegetation_change_classification.png", change_map, width = 10, height = 6, dpi = 300)
@@ -632,7 +473,7 @@ mining_map <- ggplot(mining_df) +
 mining_map
 ```
 
-![](maps/unnamed-chunk-14-1.png)<!-- -->
+![](maps/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 ggsave("maps/mining_hotspots_emphasized.png", mining_map, width = 10, height = 6, dpi = 300)

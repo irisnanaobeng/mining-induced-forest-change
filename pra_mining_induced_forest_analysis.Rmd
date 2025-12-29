@@ -149,7 +149,7 @@ fc_2022 <- c(nir_2022, red_2022, green_2022)
 True color images show the landscape as it appears to the human eye.
 This helps identify visible changes like deforestation and bare soil exposure.
 
-```{r, fig.width=24, fig.height=8}
+```{r true-color, fig.width=18, fig.height=6, echo=FALSE}
   p_tc_2018 <- im.ggplotRGB(tc_2018, title = "True Colour 2018")
   p_tc_2020 <- im.ggplotRGB(tc_2020, title = "True Colour 2020")
   p_tc_2022 <- im.ggplotRGB(tc_2022, title = "True Colour 2022")
@@ -175,7 +175,7 @@ ggsave("maps/true_color_comparison.png", combined_true_color, width = 18, height
   Healthy vegetation appears bright red, water appears dark, and urban areas appear cyan.
   This is excellent for monitoring vegetation health and detecting stress.
   
-```{r, fig.width=24, fig.height=8}
+```{r false-color, fig.width=18, fig.height=6, echo=FALSE}
   p_fc_2018 <- im.ggplotRGB(fc_2018, title = "False Colour 2018")
   p_fc_2020 <- im.ggplotRGB(fc_2020, title = "False Colour 2020")
   p_fc_2022 <- im.ggplotRGB(fc_2022, title = "False Colour 2022")
@@ -219,7 +219,7 @@ This index quantifies vegetation greenness and health:
 ## 9. NDVI Time Series Visualization
   Visualizing NDVI to help identify areas of vegetation loss or degradation over time.
   
-```{r, fig.width=26, fig.height=9}
+```{r ndvi-change, fig.width=18, fig.height=6, echo=FALSE}
 p_ndvi_2018 <- plot_singleband_gg(ndvi_2018, title = "NDVI 2018")
 p_ndvi_2020 <- plot_singleband_gg(ndvi_2020, title = "NDVI 2020")
 p_ndvi_2022 <- plot_singleband_gg(ndvi_2022, title = "NDVI 2022")
@@ -249,7 +249,7 @@ ggsave("maps/ndvi_timeseries.png", combined_ndvi,
 ## 10. NDVI Change Detection
 Detecting significant changes in NDVI between 2018 and 2022 to identify areas of vegetation loss or gain.
 
-```{r, fig.width=20, fig.height=8}
+```{r vegetation-classification, fig.width=10, fig.height=6, echo=FALSE}
   ndvi_diff_18_22 <- ndvi_2022 - ndvi_2018
   ndvi_change_18_22_class <- ndvi_change_class(ndvi_diff_18_22)
   
