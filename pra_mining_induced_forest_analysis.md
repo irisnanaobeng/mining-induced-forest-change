@@ -638,6 +638,145 @@ mining_map
 ggsave("maps/mining_hotspots_emphasized.png", mining_map, width = 10, height = 6, dpi = 300)
 ```
 
+### 14. Vegetation Classification Using im.classify
+
+``` r
+# ---- 1. Define im.classify ----
+im.classify <- function(ndvi_current, ndvi_previous = NULL, 
+                        water_threshold = 0,
+                        mining_threshold = 0.25,
+                        healthy_threshold = 0.45,
+                        disturbed_low = 0.25,
+                        disturbed_high = 0.45) {
+  
+  class_raster <- ndvi_current * 0
+  values(class_raster) <- NA
+  
+  water_mask <- ndvi_current < water_threshold
+  class_raster[water_mask] <- 1
+  print(paste("Water pixels:", sum(water_mask, na.rm = TRUE)))
+  
+  mining_mask <- NULL
+  if(!is.null(ndvi_previous)) {
+    mining_mask <- (ndvi_previous >= healthy_threshold) & 
+                   (ndvi_current < mining_threshold) &
+                   !water_mask
+    class_raster[mining_mask] <- 2
+    print(paste("Active mining pixels:", sum(mining_mask, na.rm = TRUE)))
+  } else {
+    mining_mask <- ndvi_current * 0
+  }
+  
+  healthy_mask <- (ndvi_current >= healthy_threshold) & 
+                  !water_mask & !mining_mask
+  class_raster[healthy_mask] <- 3
+  print(paste("Healthy vegetation pixels:", sum(healthy_mask, na.rm = TRUE)))
+  
+  disturbed_mask <- (ndvi_current >= disturbed_low) & 
+                    (ndvi_current < disturbed_high) &
+                    !water_mask & !mining_mask & !healthy_mask
+  class_raster[disturbed_mask] <- 4
+  print(paste("Disturbed vegetation pixels:", sum(disturbed_mask, na.rm = TRUE)))
+  
+  bare_mask <- (ndvi_current >= 0) & 
+               (ndvi_current < disturbed_low) &
+               !water_mask & !mining_mask & !healthy_mask & !disturbed_mask
+  class_raster[bare_mask] <- 5
+  print(paste("Bare soil pixels:", sum(bare_mask, na.rm = TRUE)))
+  
+  unclassified <- is.na(values(class_raster))
+  print(paste("Unclassified pixels:", sum(unclassified, na.rm = TRUE)))
+  print(paste("Total classified pixels:", sum(!unclassified, na.rm = TRUE)))
+  
+  names(class_raster) <- "classification"
+  return(class_raster)
+}
+```
+
+``` r
+ndvi_2018 <- (nir_2018 - red_2018) / (nir_2018 + red_2018)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          
+
+``` r
+names(ndvi_2018) <- "NDVI_2018"
+
+ndvi_2022 <- (nir_2022 - red_2022) / (nir_2022 + red_2022)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          
+
+``` r
+names(ndvi_2022) <- "NDVI_2022"
+
+print("=== CLASSIFYING 2022 VEGETATION ===")
+```
+
+    ## [1] "=== CLASSIFYING 2022 VEGETATION ==="
+
+``` r
+vegetation_classes <- im.classify(ndvi_current = ndvi_2022,
+ndvi_previous = ndvi_2018)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          [1] "Water pixels: rast(ncols=10980, nrows=10980, nlyrs=1, xmin=6e+05, xmax=709800, ymin=690240, ymax=800040, names=c('sum'), crs='EPSG:32630')"
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          [1] "Active mining pixels: rast(ncols=10980, nrows=10980, nlyrs=1, xmin=6e+05, xmax=709800, ymin=690240, ymax=800040, names=c('sum'), crs='EPSG:32630')"
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          [1] "Healthy vegetation pixels: rast(ncols=10980, nrows=10980, nlyrs=1, xmin=6e+05, xmax=709800, ymin=690240, ymax=800040, names=c('sum'), crs='EPSG:32630')"
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          [1] "Disturbed vegetation pixels: rast(ncols=10980, nrows=10980, nlyrs=1, xmin=6e+05, xmax=709800, ymin=690240, ymax=800040, names=c('sum'), crs='EPSG:32630')"
+    ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          [1] "Bare soil pixels: rast(ncols=10980, nrows=10980, nlyrs=1, xmin=6e+05, xmax=709800, ymin=690240, ymax=800040, names=c('sum'), crs='EPSG:32630')"
+    ## [1] "Unclassified pixels: 0"
+    ## [1] "Total classified pixels: 120560400"
+
+``` r
+class_small <- terra::aggregate(vegetation_classes,fact = 8,fun = modal,na.rm = TRUE)
+df_class <- as.data.frame(class_small, xy = TRUE)
+df_class <- na.omit(df_class)
+colnames(df_class) <- c("x", "y", "class")
+
+class_colors <- c(
+  "1" = "deepskyblue",    # Water
+  "2" = "red",            # Active Mining Areas
+  "3" = "darkgreen",    # Healthy Vegetation
+  "4" = "gold",     # Disturbed Vegetation
+  "5" = "tan"            # Bare Ground / Non-Forest
+)
+
+im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
+geom_raster() +
+scale_fill_manual(
+values = class_colors,
+name = "Land Cover Class",
+labels = c(
+"1" = "Water",
+"2" = "Active Mining",
+"3" = "Healthy Vegetation",
+"4" = "Disturbed Vegetation",
+"5" = "Bare Soil"
+)
+) +
+coord_equal() +
+labs(
+  title = "Vegetation Condition and Mining Disturbance (2022)",
+  subtitle = "NDVI-based land cover classification highlighting vegetation condition and mining activity"
+) +
+theme(
+  plot.title = element_text(hjust = 0.5, face = "bold", size = 15),
+  plot.subtitle = element_text(hjust = 0.5, size = 11),
+  panel.grid = element_blank(),
+  legend.position = "right"
+)
+
+im_class_map
+```
+
+![](maps/vegetation-map-1.png)<!-- -->
+
+``` r
+ggsave("maps/vegetation_mining_2022.png", im_class_map,
+width = 10, height = 6, dpi = 300, bg = "white")
+```
+
 ## Summary
 
 This analysis demonstrates significant vegetation changes in the PRA
