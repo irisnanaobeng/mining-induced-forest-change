@@ -6,6 +6,16 @@ Iris Nana Obeng
 
 ## Introduction
 
+The study focuses on the Pra River Basin in southern Ghana, a region
+that drains parts of the Ashanti, Eastern, and Central regions before
+discharging into the Gulf of Guinea. The basin is characterized by
+tropical forest ecosystems and intensive human activities, particularly
+artisanal and large-scale gold mining along river channels and
+floodplains. Due to its ecological importance and increasing mining
+pressure, the Pra River Basin provides an ideal setting for assessing
+land cover and vegetation changes using satellite-based spectral
+analysis.
+
 The PRA River Basin, located in Ghana, has experienced significant
 environmental changes due to mining activities. This study aims to
 assess the impact of mining on forest vegetation using Sentinel-2
@@ -21,6 +31,15 @@ cover (\<10%) and seasonal consistency (dry season) to ensure accurate
 vegetation analysis.
 
 ``` r
+if (!dir.exists("maps")) {
+  dir.create("maps")
+}
+```
+
+``` r
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(ggspatial)
 library(terra)
 library(ggplot2) 
 library(patchwork) 
@@ -32,10 +51,124 @@ library(viridis)
 ```
 
 ``` r
-if (!dir.exists("maps")) {
-  dir.create("maps")
-}
+# Pra River Basin Location Map – Ghana
+
+ghana <- ne_states(country = "Ghana", returnclass = "sf")
+
+# Pra River Basin (approximate bounding box) 
+# Latitude: 5.5–6.5 N | Longitude: -1.5 – -0.5 W
+pra_bbox <- st_bbox(
+  c(xmin = -1.5, xmax = -0.5,
+    ymin = 5.5, ymax = 6.5),
+  crs = st_crs(4326)
+)
+
+pra_basin <- st_as_sfc(pra_bbox)
+
+# ---- 5. Africa map for inset ----
+africa <- ne_countries(
+  scale = "medium",
+  continent = "Africa",
+  returnclass = "sf"
+)
+
+# ---- 6. Insetting map (Africa with Ghana highlighted) ----
+inset_map <- ggplot() +
+  geom_sf(data = africa, fill = "grey90", color = "grey70", linewidth = 0.2) +
+  geom_sf(data = ghana, fill = "#2E86AB", color = "black", linewidth = 0.3) +
+  coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
+  theme_void() +
+  theme(
+    panel.background = element_rect(fill = "white", color = "black", linewidth = 0.5)
+  )
+
+# ---- 7. Main Ghana map ----
+main_map <- ggplot() +
+  geom_sf(data = ghana, fill = "azure2", color = "grey60", linewidth = 0.3) +
+  geom_sf(
+    data = pra_basin,
+    fill = "#A23B72",
+    alpha = 0.6,
+    color = "#A23B72",
+    linewidth = 0.8
+  ) +
+
+  # Major cities
+  geom_point(
+    data = data.frame(
+      city = c("Accra", "Kumasi", "Cape Coast", "Takoradi"),
+      lon = c(-0.19, -1.62, -1.28, -1.76),
+      lat = c(5.60, 6.69, 5.13, 4.90)
+    ),
+    aes(x = lon, y = lat),
+    shape = 21, size = 3,
+    fill = "white", color = "black"
+  ) +
+
+  geom_text(
+    data = data.frame(
+      city = c("Accra", "Kumasi", "Cape Coast", "Takoradi"),
+      lon = c(-0.19, -1.62, -1.28, -1.76),
+      lat = c(5.60, 6.69, 5.13, 4.90)
+    ),
+    aes(x = lon, y = lat, label = city),
+    nudge_y = 0.15,
+    size = 3.5
+  ) +
+
+  annotation_scale(location = "bl", width_hint = 0.3) +
+  annotation_north_arrow(
+    location = "tr",
+    style = north_arrow_fancy_orienteering
+  ) +
+
+  labs(
+    title = "Study Area: Pra River Basin, Ghana",
+    subtitle = "Context map for mining impact analysis",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+
+  annotate(
+    "text",
+    x = -1.0, y = 6.35,
+    label = "Pra River Basin",
+    size = 5,
+    fontface = "bold",
+    color = "#A23B72"
+  ) +
+
+  coord_sf(xlim = c(-3.5, 1.5), ylim = c(4.5, 11.5), expand = FALSE) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    panel.grid = element_line(color = "grey90"),
+    axis.text = element_text(size = 9)
+  )
+
+# ---- 8. Combine main + inset ----
+final_map <- main_map +
+  inset_element(
+    inset_map,
+    left = 0.65, bottom = 0.65,
+    right = 0.98, top = 0.98
+  )
+
+# ---- 9. Save map ----
+dir.create("maps", showWarnings = FALSE)
+
+ggsave(
+  "maps/pra_river_basin_ghana_location.png",
+  final_map,
+  width = 12, height = 10, dpi = 300, bg = "white"
+)
+
+# ---- 10. Display ----
+final_map
 ```
+
+![](maps/unnamed-chunk-2-1.png)<!-- -->
 
 ## Custom Visualization Functions
 
@@ -255,9 +388,9 @@ ndvi_change_bar <- ggplot(ndvi_change_summary,
   ) +
   scale_fill_manual(
     values = c(
-      "Vegetation Decrease" = "#FF000047",
-      "No Change" = "#F5F5DC",
-      "Vegetation Increase" = "#7ACD32"
+      "Vegetation Decrease" = "tomato",
+      "No Change" = "bisque",
+      "Vegetation Increase" = "olivedrab"
     ),
     guide = "none"
   ) +
@@ -279,7 +412,7 @@ ndvi_change_bar <- ggplot(ndvi_change_summary,
 ndvi_change_bar
 ```
 
-![](maps/unnamed-chunk-8-1.png)<!-- -->
+![](maps/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 ggsave("maps/ndvi_change_percentage_bar_chart.png",ndvi_change_bar,width = 8,height = 6,dpi = 300)
@@ -419,7 +552,7 @@ change_map <- ggplot(df_class) +
 change_map
 ```
 
-![](maps/unnamed-chunk-9-1.png)<!-- -->
+![](maps/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 ggsave("maps/vegetation_change_classification.png", change_map, width = 10, height = 6, dpi = 300)
@@ -473,7 +606,7 @@ mining_map <- ggplot(mining_df) +
 mining_map
 ```
 
-![](maps/unnamed-chunk-10-1.png)<!-- -->
+![](maps/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 ggsave("maps/mining_hotspots_emphasized.png", mining_map, width = 10, height = 6, dpi = 300)
@@ -577,9 +710,9 @@ colnames(df_class) <- c("x", "y", "class")
 
 class_colors <- c(
   "1" = "deepskyblue",    # Water
-  "2" = "red",            # Active Mining Areas
+  "2" = "firebrick1",            # Active Mining Areas
   "3" = "darkgreen",    # Healthy Vegetation
-  "4" = "gold",     # Disturbed Vegetation
+  "4" = "gold2",     # Disturbed Vegetation
   "5" = "tan"            # Bare Ground / Non-Forest
 )
 
@@ -617,6 +750,480 @@ im_class_map
 ggsave("maps/vegetation_mining_2022.png", im_class_map,
 width = 10, height = 6, dpi = 300, bg = "white")
 ```
+
+## 15.Spectral Distance Analysis Using Fuzzy Classification
+
+To assess spectral similarity to mining areas over time, fuzzy C-means
+classification was applied to Sentinel-2 imagery for 2018, 2020, and
+2022. Using 2018 mining spectral signatures as a fixed reference ensures
+temporal comparability and directly quantifies areas becoming more
+similar to mining characteristics.
+
+``` r
+# Creating 4-band spectral stacks for each year
+spec_stack_2018 <- c(blue_2018, green_2018, red_2018, nir_2018)
+names(spec_stack_2018) <- c("Blue", "Green", "Red", "NIR")
+
+spec_stack_2020 <- c(blue_2020, green_2020, red_2020, nir_2020)
+names(spec_stack_2020) <- c("Blue", "Green", "Red", "NIR")
+
+spec_stack_2022 <- c(blue_2022, green_2022, red_2022, nir_2022)
+names(spec_stack_2022) <- c("Blue", "Green", "Red", "NIR")
+```
+
+## Spatial Aggregation
+
+To improve computational efficiency, rasters were aggregated by a factor
+of 10.
+
+``` r
+spec_small_2018 <- terra::aggregate(spec_stack_2018, fact = 10)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+spec_small_2020 <- terra::aggregate(spec_stack_2020, fact = 10)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+spec_small_2022 <- terra::aggregate(spec_stack_2022, fact = 10)
+```
+
+    ## |---------|---------|---------|---------|=========================================                                          
+
+``` r
+print(sprintf("Resolution reduced to: %.1f meters", terra::res(spec_small_2018)[1]))
+```
+
+    ## [1] "Resolution reduced to: 100.0 meters"
+
+``` r
+print(sprintf("Pixel counts: 2018 = %d, 2020 = %d, 2022 = %d", 
+              ncell(spec_small_2018), ncell(spec_small_2020), ncell(spec_small_2022)))
+```
+
+    ## [1] "Pixel counts: 2018 = 1205604, 2020 = 1205604, 2022 = 1205604"
+
+## Fuzzy Classification Function
+
+A custom fuzzy classification function was implemented using Euclidean
+distance in standardized spectral space.
+
+``` r
+im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, 
+                     m = 2, do_plot = FALSE) {
+  
+  # Validate input
+  if (!inherits(input_image, "SpatRaster")) {
+    stop("Input must be a SpatRaster object")
+  }
+  
+  # Extract and clean pixel values
+  vals <- terra::as.matrix(input_image)
+  valid_idx <- complete.cases(vals)
+  vals <- vals[valid_idx, , drop = FALSE]
+  
+  if (nrow(vals) == 0) stop("No valid pixels found")
+  
+  # Standardize to 0-255 scale
+  for (i in 1:ncol(vals)) {
+    min_val <- min(vals[, i], na.rm = TRUE)
+    max_val <- max(vals[, i], na.rm = TRUE)
+    if (max_val > min_val) {
+      vals[, i] <- 255 * (vals[, i] - min_val) / (max_val - min_val)
+    } else {
+      vals[, i] <- 0
+    }
+  }
+  
+  # K-means clustering
+  set.seed(seed)
+  km_result <- kmeans(vals, centers = num_clusters)
+  centers <- km_result$centers
+  
+  # Calculate Euclidean distances to centroids
+  dist_matrix <- matrix(NA, nrow(vals), num_clusters)
+  for (k in 1:num_clusters) {
+    diff_matrix <- sweep(vals, 2, centers[k, ], "-")
+    dist_matrix[, k] <- sqrt(rowSums(diff_matrix^2))
+  }
+  
+  # Fuzzy membership calculation (Fuzzy C-means)
+  exponent <- 2 / (m - 1)
+  membership_matrix <- matrix(NA, nrow(vals), num_clusters)
+  
+  for (i in 1:nrow(dist_matrix)) {
+    distances <- dist_matrix[i, ]
+    
+    if (any(distances == 0)) {
+      # Handle exact matches to centroids
+      membership <- rep(0, num_clusters)
+      exact_matches <- which(distances == 0)
+      membership[exact_matches] <- 1 / length(exact_matches)
+    } else {
+      # Standard fuzzy membership formula
+      ratio_matrix <- outer(distances, distances, "/")
+      membership <- 1 / rowSums(ratio_matrix^exponent)
+    }
+    
+    membership_matrix[i, ] <- membership
+  }
+  
+  # Create output rasters
+  template_raster <- input_image[[1]]
+  
+  distance_rasters <- list()
+  membership_rasters <- list()
+  
+  for (k in 1:num_clusters) {
+    # Distance raster
+    dist_raster <- template_raster
+    dist_values <- rep(NA, terra::ncell(template_raster))
+    dist_values[valid_idx] <- dist_matrix[, k]
+    terra::values(dist_raster) <- dist_values
+    distance_rasters[[k]] <- dist_raster
+    
+    # Membership raster
+    mem_raster <- template_raster
+    mem_values <- rep(NA, terra::ncell(template_raster))
+    mem_values[valid_idx] <- membership_matrix[, k]
+    terra::values(mem_raster) <- mem_values
+    membership_rasters[[k]] <- mem_raster
+  }
+  
+  # Compile final outputs
+  distance_stack <- terra::rast(distance_rasters)
+  names(distance_stack) <- paste0("class_", 1:num_clusters, "_distance")
+  
+  membership_stack <- terra::rast(membership_rasters)
+  names(membership_stack) <- paste0("class_", 1:num_clusters, "_membership")
+  
+  # Optional plotting
+  if (do_plot) {
+    terra::plot(membership_stack, 
+                main = "Fuzzy Membership Maps",
+                col = viridis::viridis(100))
+  }
+  
+  # Return comprehensive results
+  return(list(
+    distances = distance_stack,
+    memberships = membership_stack,
+    centers = centers,
+    raw_distances = dist_matrix,
+    scaled_values = vals
+  ))
+}
+
+# Fixed-centroid version for temporal analysis
+im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
+  
+  # Extract and clean pixel values
+  vals <- terra::as.matrix(input_image)
+  valid_idx <- complete.cases(vals)
+  vals <- vals[valid_idx, , drop = FALSE]
+  
+  if (nrow(vals) == 0) stop("No valid pixels found")
+  
+  # Apply same scaling as original function
+  for (i in 1:ncol(vals)) {
+    min_val <- min(vals[, i], na.rm = TRUE)
+    max_val <- max(vals[, i], na.rm = TRUE)
+    if (max_val > min_val) {
+      vals[, i] <- 255 * (vals[, i] - min_val) / (max_val - min_val)
+    } else {
+      vals[, i] <- 0
+    }
+  }
+  
+  # Use pre-defined centers (no k-means)
+  centers <- fixed_centers
+  num_clusters <- nrow(centers)
+  
+  # Calculate distances to fixed centroids
+  dist_matrix <- matrix(NA, nrow(vals), num_clusters)
+  for (k in 1:num_clusters) {
+    diff_matrix <- sweep(vals, 2, centers[k, ], "-")
+    dist_matrix[, k] <- sqrt(rowSums(diff_matrix^2))
+  }
+  
+  # Fuzzy membership calculation
+  exponent <- 2 / (m - 1)
+  membership_matrix <- matrix(NA, nrow(vals), num_clusters)
+  
+  for (i in 1:nrow(dist_matrix)) {
+    distances <- dist_matrix[i, ]
+    
+    if (any(distances == 0)) {
+      membership <- rep(0, num_clusters)
+      exact_matches <- which(distances == 0)
+      membership[exact_matches] <- 1 / length(exact_matches)
+    } else {
+      ratio_matrix <- outer(distances, distances, "/")
+      membership <- 1 / rowSums(ratio_matrix^exponent)
+    }
+    
+    membership_matrix[i, ] <- membership
+  }
+  
+  # Create output rasters
+  template_raster <- input_image[[1]]
+  
+  distance_rasters <- list()
+  membership_rasters <- list()
+  
+  for (k in 1:num_clusters) {
+    # Distance raster
+    dist_raster <- template_raster
+    dist_values <- rep(NA, terra::ncell(template_raster))
+    dist_values[valid_idx] <- dist_matrix[, k]
+    terra::values(dist_raster) <- dist_values
+    distance_rasters[[k]] <- dist_raster
+    
+    # Membership raster
+    mem_raster <- template_raster
+    mem_values <- rep(NA, terra::ncell(template_raster))
+    mem_values[valid_idx] <- membership_matrix[, k]
+    terra::values(mem_raster) <- mem_values
+    membership_rasters[[k]] <- mem_raster
+  }
+  
+  # Compile outputs
+  distance_stack <- terra::rast(distance_rasters)
+  names(distance_stack) <- paste0("class_", 1:num_clusters, "_distance")
+  
+  membership_stack <- terra::rast(membership_rasters)
+  names(membership_stack) <- paste0("class_", 1:num_clusters, "_membership")
+  
+  if (do_plot) {
+    terra::plot(membership_stack, 
+                main = "Fuzzy Membership Maps (Fixed Centroids)",
+                col = viridis::viridis(100))
+  }
+  
+  return(list(
+    distances = distance_stack,
+    memberships = membership_stack,
+    centers = centers,
+    raw_distances = dist_matrix,
+    scaled_values = vals
+  ))
+}
+
+print("Fuzzy classification")
+```
+
+    ## [1] "Fuzzy classification"
+
+### Temporal Analysis Pipeline
+
+``` r
+# 2018 centroids (baseline)
+
+print("Step 1: Computing 2018 baseline centroids...")
+```
+
+    ## [1] "Step 1: Computing 2018 baseline centroids..."
+
+``` r
+fuzzy_2018 <- im.fuzzy(spec_small_2018, num_clusters = 3, seed = 42, do_plot = FALSE)
+centroids_2018 <- fuzzy_2018$centers
+
+# Saving centroids for reproducibility
+write.csv(centroids_2018, "centroids_2018.csv", row.names = FALSE)
+print("2018 centroids saved to 'centroids_2018.csv'")
+```
+
+    ## [1] "2018 centroids saved to 'centroids_2018.csv'"
+
+``` r
+# Applying same centroids to 2020 and 2022
+print("Step 2: Applying 2018 centroids to 2020 and 2022...")
+```
+
+    ## [1] "Step 2: Applying 2018 centroids to 2020 and 2022..."
+
+``` r
+fuzzy_2020 <- im.fuzzy.fixed(spec_small_2020, fixed_centers = centroids_2018, do_plot = FALSE)
+fuzzy_2022 <- im.fuzzy.fixed(spec_small_2022, fixed_centers = centroids_2018, do_plot = FALSE)
+
+print("Temporal analysis complete for all three years")
+```
+
+    ## [1] "Temporal analysis complete for all three years"
+
+### Mining Class Identification
+
+``` r
+# Identify mining class based on spectral signature
+red_nir_ratio <- centroids_2018[, 3] / centroids_2018[, 4]
+
+print("Spectral Characteristics of Each Class:")
+```
+
+    ## [1] "Spectral Characteristics of Each Class:"
+
+``` r
+centroid_df <- data.frame(
+  Class = paste("Class", 1:3),
+  Blue = round(centroids_2018[, 1], 1),
+  Green = round(centroids_2018[, 2], 1),
+  Red = round(centroids_2018[, 3], 1),
+  NIR = round(centroids_2018[, 4], 1),
+  Red_NIR_Ratio = round(red_nir_ratio, 3),
+  Interpretation = c("", "", "")
+)
+
+# Interpretations based on spectral characteristics
+for (i in 1:3) {
+  if (red_nir_ratio[i] == max(red_nir_ratio)) {
+    centroid_df$Interpretation[i] <- "Mining/Bare Soil (Highest Red/NIR)"
+  } else if (centroids_2018[i, 4] > 150) {
+    centroid_df$Interpretation[i] <- "Healthy Vegetation"
+  } else {
+    centroid_df$Interpretation[i] <- "Disturbed Vegetation"
+  }
+}
+
+print(centroid_df)
+```
+
+    ##     Class Blue Green  Red  NIR Red_NIR_Ratio                     Interpretation
+    ## 1 Class 1 30.1  39.8 49.2 73.0         0.674 Mining/Bare Soil (Highest Red/NIR)
+    ## 2 Class 2 14.9  20.5 22.2 66.0         0.337               Disturbed Vegetation
+    ## 3 Class 3 11.5  17.1 13.5 86.3         0.156               Disturbed Vegetation
+
+``` r
+mining_class <- which.max(red_nir_ratio)
+print(paste("Mining identified as Class", mining_class, 
+            "(highest Red/NIR ratio =", round(max(red_nir_ratio), 3), ")"))
+```
+
+    ## [1] "Mining identified as Class 1 (highest Red/NIR ratio = 0.674 )"
+
+### Temporal Distance Visualization
+
+``` r
+# Function to create temporal distance plots
+plot_temporal_distance <- function(fuzzy_2018, fuzzy_2020, fuzzy_2022, 
+                                   mining_class, n_samples = 5000) {
+  
+  # Extract and sample distances
+  extract_distances <- function(fuzzy_result, year_label, class_idx, n_samples) {
+    dists <- fuzzy_result$raw_distances[, class_idx]
+    if (length(dists) > n_samples) {
+      set.seed(42)
+      dists <- sample(dists, n_samples)
+    }
+    return(data.frame(Year = year_label, Distance = dists))
+  }
+  
+  # Combine data
+  dist_data <- rbind(
+    extract_distances(fuzzy_2018, "2018", mining_class, n_samples),
+    extract_distances(fuzzy_2020, "2020", mining_class, n_samples),
+    extract_distances(fuzzy_2022, "2022", mining_class, n_samples)
+  )
+  
+  # Plot 1: Density plots
+  p1 <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
+    geom_density(alpha = 0.6) +
+    scale_fill_manual(values = c("2018" = "#2E86AB", "2020" = "#F6AE2D", "2022" = "#A23B72")) +
+    labs(
+      title = "Spectral Distance to Mining Signature (2018-2022)",
+      subtitle = "Using 2018 centroids as reference",
+      x = "Distance to Mining Centroid (Lower = More Similar)",
+      y = "Density"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+          plot.subtitle = element_text(hjust = 0.5, size = 11))
+  
+  # Plot 2: Box plots
+  p2 <- ggplot(dist_data, aes(x = Year, y = Distance, fill = Year)) +
+    geom_boxplot(alpha = 0.7, outlier.size = 0.5) +
+    scale_fill_manual(values = c("2018" = "#2E86AB", "2020" = "#F6AE2D", "2022" = "#A23B72")) +
+    stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "white") +
+    labs(
+      title = "Statistical Summary of Distances",
+      y = "Distance to Mining Centroid",
+      x = "Year"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5, size = 12))
+  
+  # Plot 3: Spectral scatter (2022 only)
+  df_2022 <- data.frame(
+    Red = fuzzy_2022$scaled_values[, 3],
+    NIR = fuzzy_2022$scaled_values[, 4],
+    Distance = fuzzy_2022$raw_distances[, mining_class]
+  )
+  
+  # Sample for scatter plot
+  if (nrow(df_2022) > n_samples) {
+    set.seed(42)
+    df_2022 <- df_2022[sample(nrow(df_2022), n_samples), ]
+  }
+  
+  p3 <- ggplot(df_2022, aes(x = Red, y = NIR, color = Distance)) +
+    geom_point(alpha = 0.5, size = 0.8) +
+    scale_color_viridis_c(option = "magma", 
+                         name = "Distance\nto Mining",
+                         guide = guide_colorbar(barheight = unit(2, "cm"))) +
+    # Add 2018 mining centroid
+    geom_point(data = data.frame(x = fuzzy_2018$centers[mining_class, 3],
+                                y = fuzzy_2018$centers[mining_class, 4]),
+              aes(x = x, y = y),
+              shape = 23, size = 6, fill = "red", color = "black", stroke = 1.5) +
+    labs(
+      title = "2022: Spectral Distance to 2018 Mining Signature",
+      subtitle = "Red diamond = 2018 mining centroid",
+      x = "Red Band Reflectance (0-255)",
+      y = "NIR Band Reflectance (0-255)"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 12))
+  
+  # Combine plots
+  combined <- (p1 | p3) / p2 +
+    plot_annotation(
+      title = "Mining Impact Analysis: Pra River Basin (2018-2022)",
+      subtitle = "Fuzzy classification with fixed spectral centroids",
+      caption = "Analysis: Sentinel-2 imagery | Distance measured in standardized spectral space"
+    ) &
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16))
+  
+  return(combined)
+}
+```
+
+![](maps/generate-temporal-plots-final-1.png)<!-- -->
+
+### Interpretation and Discussion
+
+The fuzzy classification analysis reveals important patterns in
+mining-induced environmental change:
+
+1.  The density plots show distances increasing from 2018 to 2022,
+    meaning areas are becoming more different from the original mining
+    signature. This indicates growing mining activity and land cover
+    change over time.
+
+2.  The 2022 Red–NIR plot shows distances spreading out from the 2018
+    mining point, suggesting a range of land surfaces from mining areas
+    to areas with some vegetation
+
+3.  The boxplots show that distances are higher and more spread out in
+    2022, meaning mining disturbance has expanded and become more varied
+    across the area.
+
+**Integration with NDVI Findings**: These results complement the NDVI
+analysis, providing spectral evidence of mining expansion that
+corresponds with vegetation decline observed.
 
 ## Summary
 
