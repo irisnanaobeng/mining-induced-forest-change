@@ -74,7 +74,7 @@ africa <- ne_countries(
 
 # ---- 6. Insetting map (Africa with Ghana highlighted) ----
 inset_map <- ggplot() +
-  geom_sf(data = africa, fill = "grey90", color = "grey70", linewidth = 0.2) +
+  geom_sf(data = africa, fill = "bisque", color = "grey70", linewidth = 0.2) +
   geom_sf(data = ghana, fill = "#2E86AB", color = "black", linewidth = 0.3) +
   coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
   theme_void() +
@@ -84,7 +84,7 @@ inset_map <- ggplot() +
 
 # ---- 7. Main Ghana map ----
 main_map <- ggplot() +
-  geom_sf(data = ghana, fill = "azure2", color = "grey60", linewidth = 0.3) +
+  geom_sf(data = ghana, fill = "chartreuse", color = "grey60", linewidth = 0.3) +
   geom_sf(
     data = pra_basin,
     fill = "#A23B72",
