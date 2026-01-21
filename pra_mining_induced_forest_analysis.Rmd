@@ -161,14 +161,12 @@ dir.create("maps", showWarnings = FALSE)
 ggsave(
   "maps/pra_river_basin_ghana_location.png",
   final_map,
-  width = 12, height = 10, dpi = 300, bg = "white"
+  width = 14, height = 10, dpi = 300, bg = "white"
 )
 
 # ---- 10. Display ----
 final_map
 ```
-
-
 
 ## Custom Visualization Functions
 ```{r}
@@ -228,7 +226,6 @@ plot_singleband_gg <- function(r, downsample = 8, title = "") {
     theme(plot.title = element_text(hjust = 0.5))
 }
 ```
-
 
 ## Load Sentinel-2 images for 2018, 2020, and 2022
 ### 2018 Bands
@@ -741,6 +738,7 @@ print(sprintf("Pixel counts: 2018 = %d, 2020 = %d, 2022 = %d",
 ```
 
 ## Fuzzy Classification Function
+
  A custom fuzzy classification function was implemented using Euclidean distance in standardized spectral space.
 
 ```{r fuzzy-classification, echo=TRUE, message=FALSE, warning=FALSE}
@@ -948,12 +946,29 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
 print("Fuzzy classification")
 ```
 
+### Distance Extraction Function
+
+```{r}
+# Function to extract and sample distances
+extract_distances <- function(fuzzy_result, year_label, class_idx, n_samples) {
+  dists <- fuzzy_result$raw_distances[, class_idx]
+  
+  if (length(dists) > n_samples) {
+    set.seed(42)
+    dists <- sample(dists, n_samples)
+  }
+  
+  data.frame(
+    Year = year_label,
+    Distance = dists
+  )
+}
+```
 ### Temporal Analysis Pipeline
 
 ```{r temporal-pipeline, echo=TRUE, message=FALSE}
 
 # 2018 centroids (baseline)
-
 print("Step 1: Computing 2018 baseline centroids...")
 fuzzy_2018 <- im.fuzzy(spec_small_2018, num_clusters = 3, seed = 42, do_plot = FALSE)
 centroids_2018 <- fuzzy_2018$centers
@@ -962,7 +977,7 @@ centroids_2018 <- fuzzy_2018$centers
 write.csv(centroids_2018, "centroids_2018.csv", row.names = FALSE)
 print("2018 centroids saved to 'centroids_2018.csv'")
 
-# Applying same centroids to 2020 and 2022
+# Applying same centroids to 2020 and 2022 
 print("Step 2: Applying 2018 centroids to 2020 and 2022...")
 fuzzy_2020 <- im.fuzzy.fixed(spec_small_2020, fixed_centers = centroids_2018, do_plot = FALSE)
 fuzzy_2022 <- im.fuzzy.fixed(spec_small_2022, fixed_centers = centroids_2018, do_plot = FALSE)
@@ -973,6 +988,7 @@ print("Temporal analysis complete for all three years")
 ###  Mining Class Identification
 
 ```{r mining-class-identification, echo=TRUE, message=FALSE}
+
 # Identify mining class based on spectral signature
 red_nir_ratio <- centroids_2018[, 3] / centroids_2018[, 4]
 
@@ -1007,113 +1023,191 @@ print(paste("Mining identified as Class", mining_class,
 ```
 
 
-###  Temporal Distance Visualization
+```{r mining-spectral-analysis, fig.width=20, fig.height=7, echo=TRUE, message=FALSE}
+ 
+ # Create distance data for mining class
+dist_data <- rbind(
+  extract_distances(fuzzy_2018, "2018", mining_class, 5000),
+  extract_distances(fuzzy_2020, "2020", mining_class, 5000),
+  extract_distances(fuzzy_2022, "2022", mining_class, 5000)
+)
 
-```{r temporal-plot-function-2, echo=TRUE, message=FALSE}
-# Function to create temporal distance plots
-plot_temporal_distance <- function(fuzzy_2018, fuzzy_2020, fuzzy_2022, 
-                                   mining_class, n_samples = 5000) {
-  
-  # Extract and sample distances
-  extract_distances <- function(fuzzy_result, year_label, class_idx, n_samples) {
-    dists <- fuzzy_result$raw_distances[, class_idx]
-    if (length(dists) > n_samples) {
-      set.seed(42)
-      dists <- sample(dists, n_samples)
-    }
-    return(data.frame(Year = year_label, Distance = dists))
-  }
-  
-  # Combine data
-  dist_data <- rbind(
-    extract_distances(fuzzy_2018, "2018", mining_class, n_samples),
-    extract_distances(fuzzy_2020, "2020", mining_class, n_samples),
-    extract_distances(fuzzy_2022, "2022", mining_class, n_samples)
+# Density plot
+p_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("2018" = "#2E86AB", "2020" = "#F6AE2D", "2022" = "#A23B72")) +
+  labs(
+    title = "Spectral Distance to Mining Signature (2018-2022)",
+    subtitle = "Using 2018 centroids as reference",
+    x = "Distance to Mining Centroid (Lower = More Similar)",
+    y = "Density"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11)
   )
-  
-  # Plot 1: Density plots
-  p1 <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
-    geom_density(alpha = 0.6) +
-    scale_fill_manual(values = c("2018" = "#2E86AB", "2020" = "#F6AE2D", "2022" = "#A23B72")) +
-    labs(
-      title = "Spectral Distance to Mining Signature (2018-2022)",
-      subtitle = "Using 2018 centroids as reference",
-      x = "Distance to Mining Centroid (Lower = More Similar)",
-      y = "Density"
-    ) +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-          plot.subtitle = element_text(hjust = 0.5, size = 11))
-  
-  # Plot 2: Box plots
-  p2 <- ggplot(dist_data, aes(x = Year, y = Distance, fill = Year)) +
-    geom_boxplot(alpha = 0.7, outlier.size = 0.5) +
-    scale_fill_manual(values = c("2018" = "#2E86AB", "2020" = "#F6AE2D", "2022" = "#A23B72")) +
-    stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "white") +
-    labs(
-      title = "Statistical Summary of Distances",
-      y = "Distance to Mining Centroid",
-      x = "Year"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "none",
-          plot.title = element_text(hjust = 0.5, size = 12))
-  
-  # Plot 3: Spectral scatter (2022 only)
-  df_2022 <- data.frame(
-    Red = fuzzy_2022$scaled_values[, 3],
-    NIR = fuzzy_2022$scaled_values[, 4],
-    Distance = fuzzy_2022$raw_distances[, mining_class]
-  )
-  
-  # Sample for scatter plot
-  if (nrow(df_2022) > n_samples) {
-    set.seed(42)
-    df_2022 <- df_2022[sample(nrow(df_2022), n_samples), ]
-  }
-  
-  p3 <- ggplot(df_2022, aes(x = Red, y = NIR, color = Distance)) +
-    geom_point(alpha = 0.5, size = 0.8) +
-    scale_color_viridis_c(option = "magma", 
-                         name = "Distance\nto Mining",
-                         guide = guide_colorbar(barheight = unit(2, "cm"))) +
-    # Add 2018 mining centroid
-    geom_point(data = data.frame(x = fuzzy_2018$centers[mining_class, 3],
-                                y = fuzzy_2018$centers[mining_class, 4]),
-              aes(x = x, y = y),
-              shape = 23, size = 6, fill = "red", color = "black", stroke = 1.5) +
-    labs(
-      title = "2022: Spectral Distance to 2018 Mining Signature",
-      subtitle = "Red diamond = 2018 mining centroid",
-      x = "Red Band Reflectance (0-255)",
-      y = "NIR Band Reflectance (0-255)"
-    ) +
-    theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 12))
-  
-  # Combine plots
-  combined <- (p1 | p3) / p2 +
-    plot_annotation(
-      title = "Mining Impact Analysis: Pra River Basin (2018-2022)",
-      subtitle = "Fuzzy classification with fixed spectral centroids",
-      caption = "Analysis: Sentinel-2 imagery | Distance measured in standardized spectral space"
-    ) &
-    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16))
-  
-  return(combined)
+
+# Mining spectral scatter (2022)
+df_mining_scatter <- data.frame(
+  Red      = fuzzy_2022$scaled_values[, 3],
+  NIR      = fuzzy_2022$scaled_values[, 4],
+  Distance = fuzzy_2022$raw_distances[, mining_class]
+)
+
+set.seed(42)
+if (nrow(df_mining_scatter) > 5000) {
+  df_mining_scatter <- df_mining_scatter[sample(nrow(df_mining_scatter), 5000), ]
 }
+
+p_mining_scatter <- ggplot(df_mining_scatter,
+                           aes(x = Red, y = NIR, color = Distance)) +
+  geom_point(alpha = 0.5, size = 0.8) +
+  scale_color_viridis_c(
+    option = "magma",
+    name = "Distance\nto Mining"
+  ) +
+  geom_point(
+    data = data.frame(
+      x = fuzzy_2018$centers[mining_class, 3],
+      y = fuzzy_2018$centers[mining_class, 4]
+    ),
+    aes(x = x, y = y),
+    shape = 23, size = 6,
+    fill = "red", color = "black", stroke = 1.5
+  ) +
+  labs(
+    title = "Mining Spectral Distance (2022)",
+    subtitle = "Red diamond = 2018 mining centroid",
+    x = "Red Reflectance (0–255)",
+    y = "NIR Reflectance (0–255)"
+  ) +
+  theme_minimal()
+
+combined <- (p_mining_scatter | p_density) +
+  plot_layout(widths = c(1, 1.1), heights = c(1)) +
+  plot_annotation(
+    title = "Mining Impact Analysis: Pra River Basin (2018-2022)",
+    subtitle = "Fuzzy classification with fixed spectral centroids",
+    caption = "Analysis: Sentinel-2 imagery | Distance measured in standardized spectral space"
+  ) &
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    plot.caption = element_text(size = 9),
+    plot.margin = margin(10, 10, 10, 10),
+    panel.spacing = unit(1.2, "lines")
+  )
+
+print(combined)
+
+ggsave(
+  "maps/mining_spectral_analysis.png", combined, width = 20,
+  height = 7, dpi = 300, bg = "white")
 ```
 
-```{r generate-temporal-plots-final, fig.width=16, fig.height=12, echo=FALSE, message=FALSE}
-# Generate temporal analysis plot
-temporal_plot <- plot_temporal_distance(fuzzy_2018, fuzzy_2020, fuzzy_2022, mining_class)
+### Forest Class Identification
 
-# Save plot
-ggsave("maps/temporal_mining_analysis.png", temporal_plot, 
-       width = 16, height = 12, dpi = 300, bg = "white")
+```{r forest-spectral-analysis, fig.width=23, fig.height=8, echo=TRUE, message=FALSE}
 
-# Display plot
-temporal_plot
+# Forest spectral scatter (2022)
+centroid_analysis <- data.frame(
+  Class = 1:3,
+  Red = centroids_2018[, 3],
+  NIR = centroids_2018[, 4]
+)
+
+centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
+                          (centroid_analysis$NIR + centroid_analysis$Red)
+
+forest_class <- which.max(centroid_analysis$NDVI)
+
+print(paste("Forest reference class:", forest_class))
+
+df_forest_scatter <- data.frame(
+  Red      = fuzzy_2022$scaled_values[, 3],
+  NIR      = fuzzy_2022$scaled_values[, 4],
+  Red_NIR_Ratio = round(red_nir_ratio, 3),
+  Distance = fuzzy_2022$raw_distances[, forest_class]
+  )
+
+set.seed(42)
+if (nrow(df_forest_scatter) > 5000) {
+  df_forest_scatter <- df_forest_scatter[
+    sample(nrow(df_forest_scatter), 5000), ]
+}
+
+p_forest_scatter <- ggplot(df_forest_scatter,
+                           aes(x = Red, y = NIR, color = Distance)) +
+  geom_point(alpha = 0.5, size = 0.8) +
+  scale_color_viridis_c(
+    option = "viridis",
+    name = "Distance \nto Forest"
+  ) +
+  geom_point(
+    data = data.frame(
+      x = fuzzy_2018$centers[forest_class, 3],
+      y = fuzzy_2018$centers[forest_class, 4]
+    ),
+    aes(x = x, y = y),
+    shape = 23, size = 6,
+    fill = "darkgreen", color = "black", stroke = 1.5
+  ) +
+  labs(
+    title = "Forest Spectral Distance (2022)",
+    subtitle = "Green diamond = 2018 forest centroid",
+    x = "Red Reflectance (0–255)",
+    y = "NIR Reflectance (0–255)"
+  ) +
+  theme_minimal()
+
+# Forest distance density plot
+dist_data <- rbind(
+  extract_distances(fuzzy_2018, "2018", forest_class, 5000),
+  extract_distances(fuzzy_2020, "2020", forest_class, 5000),
+  extract_distances(fuzzy_2022, "2022", forest_class, 5000)
+)  
+
+p_forest_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
+  geom_density(alpha = 0.6) +
+
+  scale_fill_manual(values = c(
+    "2018" = "#006400",  # Dark green
+    "2020" = "#66A61E",  # Medium green  
+    "2022" = "#9ACD32"   # Light green
+  )) +
+  labs(
+    title = "Spectral Distance to Forest Signature (2018-2022)",  
+    subtitle = "Using 2018 centroids as reference",
+    x = "Distance to Forest Centroid (Lower = More Similar)",  
+    y = "Density"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11)
+  )
+
+combined <- (p_forest_scatter | p_forest_density) +
+  plot_layout(widths = c(1.3, 1), heights = c(1)) + 
+  plot_annotation(
+    title = "Forest Spectral Analysis (2022)",
+    subtitle = "Scatter plot vs density distribution",
+    caption = "Analysis: Sentinel-2 imagery | Distance measured in standardized spectral space"
+  ) &
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    plot.caption = element_text(size = 9),
+    plot.margin = margin(10, 10, 10, 10),
+    panel.spacing = unit(1.2, "lines"),
+    legend.position = "right"
+  )
+
+return(combined)
+
+ggsave(
+  "maps/forest_spectral_analysis.png", combined,  width = 20,  height = 8, dpi = 300, bg = "white")
 ```
 
 ### Interpretation and Discussion
@@ -1124,9 +1218,10 @@ The fuzzy classification analysis reveals important patterns in mining-induced e
 
 2. The 2022 Red–NIR plot shows distances spreading out from the 2018 mining point, suggesting a range of land surfaces from mining areas to areas with some vegetation
 
-3. The boxplots show that distances are higher and more spread out in 2022, meaning mining disturbance has expanded and become more varied across the area.
+3. “The Red–NIR spectralforest scatter plot illustrates a gradient of spectral distances from the forest centroid, indicating varying levels of forest condition ranging from intact vegetation to disturbed and non-vegetated surfaces.”
 
-**Integration with NDVI Findings**: These results complement the NDVI analysis, providing spectral evidence of mining expansion that corresponds with vegetation decline observed.
+4.The forest distance distributions show an increasing shift away from the 2018 forest centroid over time, indicating progressive loss of forest spectral integrity. By 2022, a larger proportion of pixels exhibit higher distances, suggesting widespread forest degradation and structural change.
+
 
 ## Summary 
 This analysis demonstrates significant vegetation changes in the PRA River Basin between 2018 and 2022, with mining activities identified as a primary driver of deforestation. The methods employed provide a reproducible framework for monitoring mining impacts on forest ecosystems using freely available Sentinel-2 data.
