@@ -1,5 +1,5 @@
 # Mining Induced Forest Change
-Spatial Ecology Thesis - Assessing Mining-Induced Forest Change in Pra River Basin using Sentinel-2 imagery
+Spatial Ecology Thesis - "Mining-Induced Forest Degradation in Ghana’s Pra River Basin: A Multi-Temporal Remote Sensing Analysis"
 
 MSc Thesis – Global Change Ecology & Sustainable Development
 University of Bologna (UniBo), Italy.
