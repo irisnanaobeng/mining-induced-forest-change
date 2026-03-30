@@ -1,7 +1,7 @@
 ---
 title: "Mining-Induced Forest Degradation in Ghana’s Pra River Basin: A Multi-Temporal Remote Sensing Analysis"
 author: "Iris Nana Obeng"
-date: "2026-03-29"
+date: "2026-03-30"
 output: github_document
 editor_options: 
   markdown: 
@@ -907,6 +907,7 @@ summary(values(vegetation_classes))
 ### 5.4 Mining Distribution and Influence
 
 #### 5.4.1 Mining Distribution Map
+
 ```{r mining-distribution-map-2022, fig.width=10, fig.height=8, echo=FALSE}
 
 # --- Aggregate classification and NDVI ---
