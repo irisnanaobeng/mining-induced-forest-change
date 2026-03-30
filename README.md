@@ -158,10 +158,6 @@ All outputs are stored in the **`maps/`** folder:
 * Mining distribution maps
 * Spectral analysis plots (mining & forest)
 
-Example:
-
-![NDVI Time Series](maps/ndvi_timeseries.png)
-
 
 ## Repository Structure
 
@@ -218,7 +214,7 @@ install.packages(c(
 
 
 
-# Author: **Iris Nana Obeng**
+## Author: **Iris Nana Obeng**
 GitHub: https://github.com/irisnanaobeng
 
 ## Acknowledgements
