@@ -2,7 +2,7 @@ Mining-Induced Forest Degradation in Ghana’s Pra River Basin: A
 Multi-Temporal Remote Sensing Analysis
 ================
 Iris Nana Obeng
-2026-03-29
+2026-03-30
 
 ``` r
 library(rnaturalearth)
@@ -439,7 +439,7 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_19645edcfb55_6500_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_1e855e42ab12_7813_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
