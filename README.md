@@ -1,4 +1,4 @@
-## Thesis Topic: Mining-Induced Forest Degradation in Ghana’s Pra River Basin : A Multi-Temporal Remote Sensing Analysis
+## Thesis Topic: Mining-Induced Forest Degradation in Ghana’s Pra River Basin: A Multi-Temporal Remote Sensing Analysis
 
 **MSc Thesis – Global Change Ecology & Sustainable Development**
 University of Bologna (UniBo), Italy
