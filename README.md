@@ -20,15 +20,23 @@ The study integrates **multi-temporal Sentinel-2 imagery (2018, 2020, 2022)** wi
 
 The Pra River Basin is a highly impacted tropical system in which artisanal and industrial gold mining significantly alters land cover, making it an ideal case for remote sensing-based environmental monitoring.
 
+## Research Questions
+
+This study is guided by the following research questions:
+
+1. What are the spatial and temporal patterns of vegetation change between 2018 and 2022 as detected using NDVI?
+2. Where are active mining areas located within the Pra River Basin based on NDVI-based classification?
+3. How does forest spectral similarity to baseline conditions (2018) change over time?
+4. Can spectral distance analysis reveal forest degradation not captured by NDVI change detection?
 
 ##  Research Objectives
 
 1. Quantify vegetation and forest cover change (2018 → 2020 → 2022)
-2. Detect mining-induced disturbance using NDVI and spectral signals
-3. Map spatial distribution of active mining areas
+2. Identify and map mining activities using NDVI-based classification
+3. Assess spatial patterns of mining-induced disturbance
 4. Analyse temporal changes in vegetation condition
-5. Apply **spectral distance modelling** to assess ecosystem degradation
-6. Develop a **reproducible remote sensing workflow in R**
+5. Apply spectral distance metrics to evaluate forest degradation
+6. Develop a reproducible remote sensing workflow in R
 
 
 ## Study Area
