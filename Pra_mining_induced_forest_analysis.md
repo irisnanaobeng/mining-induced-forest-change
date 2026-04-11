@@ -42,6 +42,14 @@ allows us to both locate mining activities and characterize their impact
 on surrounding forest ecosystems through changes in spectral similarity
 over time.
 
+While NDVI is widely used for detecting vegetation change, it is limited
+in capturing subtle spectral degradation prior to complete forest loss.
+To address this limitation, this study integrates NDVI-based
+classification with spectral distance analysis. This combined approach
+enables detection of both land cover transitions and progressive forest
+degradation, providing a more comprehensive assessment of mining
+impacts.
+
 ## 2. Study Area Map
 
 ``` r
@@ -325,11 +333,23 @@ ndvi_2022 <- ndvi_calc(nir_2022, red_2022)
 
 ### 4.2 NDVI-Based Land Cover Classification Function
 
+Land cover classes were derived from NDVI values using rule-based
+thresholds designed to distinguish water, mining or bare surfaces,
+healthy vegetation, and disturbed vegetation. Thresholds were selected
+based on typical spectral behaviour in tropical environments and refined
+through visual comparison with Sentinel-2 true-colour and false-colour
+composites.
+
+Water bodies were identified as pixels with NDVI values below 0.05.
+Healthy vegetation was defined as pixels with NDVI values equal to or
+greater than 0.40, while disturbed vegetation included intermediate NDVI
+values between 0.25 and 0.40. Bare soil was classified within the lower
+positive NDVI range between 0.05 and 0.25. Mining areas were identified
+using a change-based rule, in which pixels with low NDVI in 2022 and
+high vegetation values in 2018 were interpreted as areas of recent
+vegetation removal associated with mining activity.
+
 ``` r
-# NDVI thresholds were defined based on typical spectral responses of vegetation, bare soil, and water in tropical environments.
-
-
-
 im.classify <- function(ndvi_current, ndvi_previous = NULL, 
                         water_threshold = 0.05,
                         mining_threshold = 0.30,
@@ -442,11 +462,18 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_21815e49aec1_8577_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_bb369f1b77_47926_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
     ## max value   :              5
+
+Mining areas were identified using a change-based approach, where pixels
+exhibiting high vegetation values in the baseline year (NDVI \> 0.45 in
+2018) and low NDVI in the target year (NDVI \< 0.30 in 2022) were
+classified as active mining. This approach captures recent vegetation
+removal associated with mining activities rather than static bare
+surfaces.
 
 ### 4.3 Spectral Distance Analysis
 
@@ -732,6 +759,22 @@ print("Temporal analysis complete for all three years")
 # Identify mining class based on spectral signature
 red_nir_ratio <- centroids_2018[, 3] / centroids_2018[, 4]
 
+# Create centroid_analysis for forest identification
+centroid_analysis <- data.frame(
+  Class = 1:3,
+  Red = centroids_2018[, 3],
+  NIR = centroids_2018[, 4]
+)
+
+centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
+                          (centroid_analysis$NIR + centroid_analysis$Red)
+
+# Identify mining class (class with highest Red/NIR ratio)
+mining_class <- which.max(red_nir_ratio)
+
+# Identify forest class (class with highest NDVI)
+forest_class <- which.max(centroid_analysis$NDVI)
+
 # Create centroid_df for display
 centroid_df <- data.frame(
   Class = 1:3,
@@ -743,32 +786,16 @@ centroid_df <- data.frame(
   Interpretation = "Undetermined"
 )
 
-# Assign interpretations based on spectral characteristics
+# Assign interpretations consistently
 for (i in 1:3) {
-  if (red_nir_ratio[i] == max(red_nir_ratio)) {
-    centroid_df$Interpretation[i] <- "Mining/Bare Soil (Highest Red/NIR)"
-  } else if (centroids_2018[i, 4] > 150) {
+  if (i == mining_class) {
+    centroid_df$Interpretation[i] <- "Mining/Bare Soil"
+  } else if (i == forest_class) {
     centroid_df$Interpretation[i] <- "Healthy Vegetation"
   } else {
     centroid_df$Interpretation[i] <- "Disturbed Vegetation"
   }
 }
-
-# Identify mining class (class with highest Red/NIR ratio)
-mining_class <- which.max(red_nir_ratio)
-
-# Create centroid_analysis for forest identification (used later)
-centroid_analysis <- data.frame(
-  Class = 1:3,
-  Red = centroids_2018[, 3],
-  NIR = centroids_2018[, 4]
-)
-
-centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
-                          (centroid_analysis$NIR + centroid_analysis$Red)
-
-# Identify forest class (class with highest NDVI)
-forest_class <- which.max(centroid_analysis$NDVI)
 
 print("Spectral Characteristics of Each Class:")
 ```
@@ -779,10 +806,10 @@ print("Spectral Characteristics of Each Class:")
 print(centroid_df)
 ```
 
-    ##   Class Blue Green  Red  NIR Red_NIR_Ratio                     Interpretation
-    ## 1     1 30.1  39.8 49.2 73.0         0.674 Mining/Bare Soil (Highest Red/NIR)
-    ## 2     2 14.9  20.5 22.2 66.0         0.337               Disturbed Vegetation
-    ## 3     3 11.5  17.1 13.5 86.3         0.156               Disturbed Vegetation
+    ##   Class Blue Green  Red  NIR Red_NIR_Ratio       Interpretation
+    ## 1     1 30.1  39.8 49.2 73.0         0.674     Mining/Bare Soil
+    ## 2     2 14.9  20.5 22.2 66.0         0.337 Disturbed Vegetation
+    ## 3     3 11.5  17.1 13.5 86.3         0.156   Healthy Vegetation
 
 ``` r
 print(paste("Mining class is Class", mining_class))
@@ -795,6 +822,12 @@ print(paste("Forest class is Class", forest_class))
 ```
 
     ## [1] "Forest class is Class 3"
+
+| Class | Blue | Green |  Red |  NIR | Red_NIR_Ratio | Interpretation       |
+|------:|-----:|------:|-----:|-----:|--------------:|:---------------------|
+|     1 | 30.1 |  39.8 | 49.2 | 73.0 |         0.674 | Mining/Bare Soil     |
+|     2 | 14.9 |  20.5 | 22.2 | 66.0 |         0.337 | Disturbed Vegetation |
+|     3 | 11.5 |  17.1 | 13.5 | 86.3 |         0.156 | Healthy Vegetation   |
 
 ## 5. Results
 
@@ -828,31 +861,35 @@ class_counts <- table(ndvi_change_clean$class)
 class_names <- names(class_counts)
 
 ndvi_change_summary <- data.frame(
-  class = factor(class_names, levels = c("No Change", "Vegetation Increase", "Vegetation Decrease")),
+  class = factor(
+    class_names,
+    levels = c("Vegetation Decrease", "No Change", "Vegetation Increase")
+  ),
   pixel_count = as.numeric(class_counts),
   percentage = as.numeric(class_counts) / sum(class_counts) * 100
 )
 
-# Bar chart
-ndvi_change_bar <- ggplot(ndvi_change_summary,
-                          aes(x = class, y = percentage, fill = class)) +
-  geom_col(width = 0.6) +
+ndvi_change_bar <- ggplot(
+  ndvi_change_summary,
+  aes(x = class, y = percentage, fill = class)
+) +
+  geom_col(width = 0.7) +
   geom_text(
     aes(label = paste0(round(percentage, 1), "%")),
-    vjust = -0.3,
-    size = 4
+    vjust = -0.4,
+    size = 4.5
   ) +
   scale_fill_manual(
     values = c(
-      "Vegetation Decrease" = palette$mining,
-      "No Change" = palette$no_change,
-      "Vegetation Increase" = palette$increase
+      "Vegetation Decrease" = "#D73027",
+      "No Change" = "#D9D9D9",
+      "Vegetation Increase" = "#1A9850"
     ),
     guide = "none"
   ) +
   scale_y_continuous(
     labels = percent_format(scale = 1),
-    limits = c(0, NA)
+    expand = expansion(mult = c(0, 0.1))
   ) +
   labs(
     x = "NDVI Change Category",
@@ -862,7 +899,8 @@ ndvi_change_bar <- ggplot(ndvi_change_summary,
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold"),
-    axis.text.x = element_text(size = 11)
+    axis.text.x = element_text(size = 11),
+    panel.grid.major.x = element_blank()
   )
 
 ndvi_change_bar
@@ -871,8 +909,13 @@ ndvi_change_bar
 ![](maps/ndvi-change-bar-1.png)<!-- -->
 
 ``` r
-ggsave("maps/ndvi_change_percentage_bar_chart.png", ndvi_change_bar,
-       width = 8, height = 6, dpi = 300)
+ggsave(
+  "maps/ndvi_change_percentage_bar_chart.png",
+  ndvi_change_bar,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
 ```
 
 ### 5.3 Land Cover Classification Map
@@ -919,29 +962,7 @@ im_class_map
 ``` r
 ggsave("maps/vegetation_mining_2022.png", im_class_map,
        width = 10, height = 6, dpi = 300, bg = "white")
-
-# DEBUG CHECK
-freq(vegetation_classes)
 ```
-
-    ##   layer value    count
-    ## 1     1     1  1093464
-    ## 2     1     2  3819279
-    ## 3     1     3 37934451
-    ## 4     1     4 51943858
-    ## 5     1     5 25769348
-
-``` r
-summary(values(vegetation_classes))
-```
-
-    ##  classification 
-    ##  Min.   :1.000  
-    ##  1st Qu.:3.000  
-    ##  Median :4.000  
-    ##  Mean   :3.809  
-    ##  3rd Qu.:4.000  
-    ##  Max.   :5.000
 
 ### 5.4 Mining Distribution and Influence
 
@@ -1014,7 +1035,7 @@ p_mining_scatter <- ggplot(df_mining_scatter,
   theme_minimal()
 
 combined <- (p_mining_scatter | p_density) +
-  plot_layout(widths = c(1, 1.1), heights = c(1)) +
+  plot_layout(widths = c(1.3, 1.1), heights = c(1)) +
   plot_annotation(
     title = "Mining Impact Analysis: Pra River Basin (2018-2022)",
     subtitle = "Fuzzy classification with fixed spectral centroids",
@@ -1048,24 +1069,6 @@ centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
                           (centroid_analysis$NIR + centroid_analysis$Red)
 
 
-print(paste("Assigned Mining Class:", mining_class))
-```
-
-    ## [1] "Assigned Mining Class: 1"
-
-``` r
-print(paste("Assigned Forest Class:", forest_class))
-```
-
-    ## [1] "Assigned Forest Class: 3"
-
-``` r
-print(paste("Forest reference class:", forest_class))
-```
-
-    ## [1] "Forest reference class: 3"
-
-``` r
 df_forest_scatter <- data.frame(
   Red      = fuzzy_2022$scaled_values[, 3],
   NIR      = fuzzy_2022$scaled_values[, 4],
@@ -1130,7 +1133,7 @@ p_forest_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
 
 
 combined_forest <- (p_forest_scatter | p_forest_density) +
-  plot_layout(widths = c(1.3, 1), heights = c(1)) + 
+  plot_layout(widths = c(1.3, 1.1), heights = c(1)) + 
   plot_annotation(
     title = "Forest Spectral Analysis (2022)",
     subtitle = "Scatter plot vs density distribution",
@@ -1173,6 +1176,12 @@ progressive shift toward higher distances over time, indicating:
 
 - 2020-2022: Accelerated forest spectral change
 
+This increase in spectral distance from the 2018 forest centroid
+indicates a gradual loss of forest structural integrity. Such changes
+likely reflect canopy thinning, increased soil exposure, and reduced
+chlorophyll content, all of which are characteristic of forest
+degradation rather than complete land cover conversion.
+
 ### 6.2 Methodological Insights
 
 Combining NDVI thresholding (for mining identification) with spectral
@@ -1182,7 +1191,19 @@ information:
 NDVI effectively separates vegetated from non-vegetated surfaces
 
 Spectral distances capture subtle changes in forest condition before
-complete clearance
+complete clearance.
+
+### 6.3 Limitations
+
+This study is subject to several limitations. NDVI is sensitive to
+environmental factors such as soil moisture and atmospheric conditions,
+which may influence vegetation estimates. Additionally, the
+classification approach may confuse bare soil with mining areas in some
+cases. The absence of ground-truth validation data also limits the
+ability to quantitatively assess classification accuracy. Despite these
+limitations, the integration of NDVI and spectral distance analysis
+provides a robust framework for detecting relative patterns of forest
+degradation.
 
 ## 7. Conclusion
 
