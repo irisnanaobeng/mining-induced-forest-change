@@ -14,17 +14,17 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.path = 
 
 # Consistent color palette for all plots
 palette <- list(
- mining = "#D73027",               # deeper mining red
+ mining = "#FF0000",               # deeper mining red
   healthy_forest = "#1B7837",      # strong forest green
   disturbed_forest = "#FFC125",    # goldenrod1
   bare_soil = "#C7A76C",           # earthy brown
   water_bodies = "#4F94CD",        # steel blue for water
-  no_change = "#FFEFD5",           # Cornsilk - no change
+  no_change = "#D9D9D9",           # grey90 - no change
   decrease = "#B2182B",            # strong red for NDVI decrease
-  increase = "#1A9850",            # strong green for NDVI increase
-  background = "#FFBBFF",          # Linen - warm background
-  study_area = "#9B30FF",          # Medium purple - study area highlight
-  ghana_bg = "#FFE4B5"             # Seashell - Ghana background
+  increase = "#228b22",            # strong green for NDVI increase
+  background = "#C1FFC1",          # darkseagreen1 - warm background
+  study_area = "#8B0000",          # darkred - study area highlight
+  ghana_bg = "#FFEBCD"             # bisque - Ghana background
 )
 
 # Create output directory
@@ -76,7 +76,7 @@ africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf
 
 # Inset map (Africa with Ghana highlighted)
 inset_map <- ggplot() +
-  geom_sf(data = africa, fill = "plum1", color = "grey70", linewidth = 0.2) +
+  geom_sf(data = africa, fill = "sandybrown", color = "grey70", linewidth = 0.2) +
   geom_sf(data = ghana, fill = palette$study_area, color = "black", linewidth = 0.3) +
   coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
   theme_void() +
@@ -792,8 +792,8 @@ p_ndvi_diff_18_22 <- plot_singleband_gg(
 ) +
   scale_fill_gradient2(
     low = "#D73027",
-    mid = "#FFEFD5",
-    high = "#1A9850",
+    mid = "#E6E6FA",
+    high = "#228b22",
     midpoint = 0,
     name = expression(Delta * "NDVI")
   ) +
@@ -848,7 +848,7 @@ ndvi_change_bar <- ggplot(
     values = c(
       "Vegetation Decrease" = "#D73027",
       "No Change" = "#D9D9D9",
-      "Vegetation Increase" = "#1A9850"
+      "Vegetation Increase" = "#228b22"
     ),
     guide = "none"
   ) +
@@ -913,8 +913,7 @@ im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
     )
   ) +
   coord_equal() +
-  labs(title = "Land Cover Classification Showing Mining Areas (2022)") +
-  theme_minimal()
+  labs(title = "Land Cover Classification Showing Mining Areas (2022)")
 
 im_class_map
 
@@ -960,7 +959,7 @@ p_mining <- ggplot() +
   # Mining points overlay
   geom_point(data = df_mining_points,
              aes(x = x, y = y),
-             color = palette$mining,
+             color = "firebrick",
              size = 0.5,
              alpha = 0.4) +
   
@@ -973,7 +972,6 @@ p_mining <- ggplot() +
     y = "Latitude"
   ) +
   
-  theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
     plot.subtitle = element_text(hjust = 0.5, size = 12)
