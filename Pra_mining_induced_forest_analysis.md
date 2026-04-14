@@ -69,7 +69,7 @@ africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf
 
 # Inset map (Africa with Ghana highlighted)
 inset_map <- ggplot() +
-  geom_sf(data = africa, fill = "plum1", color = "grey70", linewidth = 0.2) +
+  geom_sf(data = africa, fill = "sandybrown", color = "grey70", linewidth = 0.2) +
   geom_sf(data = ghana, fill = palette$study_area, color = "black", linewidth = 0.3) +
   coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
   theme_void() +
@@ -462,7 +462,7 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_bb369f1b77_47926_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_de54729b88e_56916_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
@@ -883,7 +883,7 @@ ndvi_change_bar <- ggplot(
     values = c(
       "Vegetation Decrease" = "#D73027",
       "No Change" = "#D9D9D9",
-      "Vegetation Increase" = "#1A9850"
+      "Vegetation Increase" = "#228b22"
     ),
     guide = "none"
   ) +
@@ -951,8 +951,7 @@ im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
     )
   ) +
   coord_equal() +
-  labs(title = "Land Cover Classification Showing Mining Areas (2022)") +
-  theme_minimal()
+  labs(title = "Land Cover Classification Showing Mining Areas (2022)")
 
 im_class_map
 ```
