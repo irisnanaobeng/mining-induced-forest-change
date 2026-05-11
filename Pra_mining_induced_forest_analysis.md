@@ -52,105 +52,7 @@ impacts.
 
 ## 2. Study Area Map
 
-``` r
-# Pra River Basin Location Map – Ghana
-ghana <- ne_states(country = "Ghana", returnclass = "sf")
-
-# Pra River Basin (approximate bounding box) 
-pra_bbox <- st_bbox(
-  c(xmin = -1.5, xmax = -0.5,
-    ymin = 5.5, ymax = 6.5),
-  crs = st_crs(4326)
-)
-pra_basin <- st_as_sfc(pra_bbox)
-
-# Africa map for inset
-africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
-
-# Inset map (Africa with Ghana highlighted)
-inset_map <- ggplot() +
-  geom_sf(data = africa, fill = "sandybrown", color = "grey70", linewidth = 0.2) +
-  geom_sf(data = ghana, fill = palette$study_area, color = "black", linewidth = 0.3) +
-  coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
-  theme_void() +
-  theme(panel.background = element_rect(fill = "white", color = "black", linewidth = 0.5))
-
-# Main Ghana map
-main_map <- ggplot() +
-  geom_sf(data = ghana, fill = palette$ghana_bg, color = "grey60", linewidth = 0.3) +
-  geom_sf(
-    data = pra_basin,
-    fill = palette$study_area,
-    alpha = 0.6,
-    color = palette$study_area,
-    linewidth = 0.8
-  ) +
-  
-  # Major cities
-  geom_point(
-    data = data.frame(
-      city = c("Accra", "Kumasi", "Cape Coast", "Takoradi"),
-      lon = c(-0.19, -1.62, -1.28, -1.76),
-      lat = c(5.60, 6.69, 5.13, 4.90)
-    ),
-    aes(x = lon, y = lat),
-    shape = 21, size = 3,
-    fill = "white", color = "black"
-  ) +
-  
-  geom_text(
-    data = data.frame(
-      city = c("Accra", "Kumasi", "Cape Coast", "Takoradi"),
-      lon = c(-0.19, -1.62, -1.28, -1.76),
-      lat = c(5.60, 6.69, 5.13, 4.90)
-    ),
-    aes(x = lon, y = lat, label = city),
-    nudge_y = 0.15,
-    size = 3.5
-  ) +
-  
-  annotation_scale(location = "bl", width_hint = 0.3) +
-  annotation_north_arrow(location = "tr", style = north_arrow_fancy_orienteering) +
-  
-  labs(
-    title = "Study Area: Pra River Basin, Ghana",
-    subtitle = "Context map for mining impact analysis",
-    x = "Longitude",
-    y = "Latitude"
-  ) +
-  
-  annotate(
-    "text",
-    x = -1.0, y = 6.35,
-    label = "Pra River Basin",
-    size = 5,
-    fontface = "bold",
-    color = palette$study_area
-  ) +
-  
-  coord_sf(xlim = c(-3.5, 1.5), ylim = c(4.5, 11.5), expand = FALSE) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
-    plot.subtitle = element_text(hjust = 0.5, size = 12),
-    panel.grid = element_line(color = "grey90"),
-    axis.text = element_text(size = 9)
-  )
-
-# Combine main + inset
-final_map <- main_map +
-  inset_element(inset_map, left = 0.65, bottom = 0.65, right = 0.98, top = 0.98)
-
-
-final_map
-```
-
 ![](maps/study-area-map-1.png)<!-- -->
-
-``` r
-ggsave("maps/pra_river_basin_ghana_location.png", final_map,
-       width = 16, height = 10, dpi = 300, bg = "white")
-```
 
 ## 3. Data and Preprocessing
 
@@ -462,7 +364,7 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_de54729b88e_56916_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_50004ee1d0be_20480_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
@@ -841,7 +743,7 @@ print(paste("Forest class is Class", forest_class))
 
 ![](maps/ndvi-time-series-1.png)<!-- -->
 
-### 5.2 NDVI Change Detection
+### 5.2 NDVI Change Detection and bar chart distribution
 
     ## |---------|---------|---------|---------|=========================================                                          
 
@@ -851,72 +753,7 @@ print(paste("Forest class is Class", forest_class))
 
     ## |---------|---------|---------|---------|=========================================                                          
 
-![](maps/ndvi-change-detection-1.png)<!-- -->
-
-### 5.2.1 NDVI Change Distribution (Bar Chart)
-
-``` r
-ndvi_change_clean <- df_change[!is.na(df_change$class), ]
-class_counts <- table(ndvi_change_clean$class)
-class_names <- names(class_counts)
-
-ndvi_change_summary <- data.frame(
-  class = factor(
-    class_names,
-    levels = c("Vegetation Decrease", "No Change", "Vegetation Increase")
-  ),
-  pixel_count = as.numeric(class_counts),
-  percentage = as.numeric(class_counts) / sum(class_counts) * 100
-)
-
-ndvi_change_bar <- ggplot(
-  ndvi_change_summary,
-  aes(x = class, y = percentage, fill = class)
-) +
-  geom_col(width = 0.7) +
-  geom_text(
-    aes(label = paste0(round(percentage, 1), "%")),
-    vjust = -0.4,
-    size = 4.5
-  ) +
-  scale_fill_manual(
-    values = c(
-      "Vegetation Decrease" = "#D73027",
-      "No Change" = "#D9D9D9",
-      "Vegetation Increase" = "#228b22"
-    ),
-    guide = "none"
-  ) +
-  scale_y_continuous(
-    labels = percent_format(scale = 1),
-    expand = expansion(mult = c(0, 0.1))
-  ) +
-  labs(
-    x = "NDVI Change Category",
-    y = "Percentage of Study Area (%)",
-    title = "NDVI Change Distribution (2018–2022)"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    axis.text.x = element_text(size = 11),
-    panel.grid.major.x = element_blank()
-  )
-
-ndvi_change_bar
-```
-
-![](maps/ndvi-change-bar-1.png)<!-- -->
-
-``` r
-ggsave(
-  "maps/ndvi_change_percentage_bar_chart.png",
-  ndvi_change_bar,
-  width = 8,
-  height = 6,
-  dpi = 300
-)
-```
+![](maps/ndvi-change-combined-1.png)<!-- -->
 
 ### 5.3 Land Cover Classification Map
 
