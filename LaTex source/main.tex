@@ -71,7 +71,7 @@ The findings suggest that combining NDVI with spectral distance analysis provide
 \tableofcontents
 \listoffigures
 \listoftables
-\newpage
+\clearpage
 \pagenumbering{arabic}
 
 \chapter{Introduction}
@@ -510,7 +510,7 @@ This temporal comparison enabled the identification of trends in forest loss, de
 
 \section{Introduction}
 
-This chapter presents the results of the multi-temporal remote sensing analysis conducted for the Pra River Basin. The results are organized into six main sections: NDVI time-series analysis, NDVI change detection, land-cover classification, mining distribution, spectral analysis of mining areas, and spectral analysis of forest condition.
+This chapter presents the results of the multi-temporal remote sensing analysis conducted for the Pra River Basin. The results are organized into NDVI time-series analysis, NDVI change detection, land-cover classification, spatial distribution of mining activity, and spectral distance analysis of mining and forest condition.
 
 \section{NDVI Time-Series Analysis}
 
@@ -575,29 +575,25 @@ The spatial distribution of mining activity is presented in Figure~\ref{fig:mini
 
 \section{Spectral Analysis of Mining Areas}
 
-The spectral distance analysis shows that the spectral properties of the landscape became progressively more similar to the mining centroid between 2018 and 2022.
+The spectral distance analysis shows that the spectral properties of the landscape became progressively more similar to the mining centroid between 2018 and 2022. The change in mining spectral condition is shown in Figure~\ref{fig:mining_spectral}.
 
-In 2018, most pixels exhibited relatively large distances from the mining centroid, indicating that mining surfaces occupied only a limited proportion of the study area.
+In 2018, most pixels exhibited relatively large distances from the mining centroid, indicating that mining surfaces occupied only a limited proportion of the study area. By 2020, the distribution shifted slightly toward lower distances, suggesting an increase in mining-related surfaces. The strongest shift occurred in 2022, when a larger proportion of pixels exhibited low spectral distance to the mining centroid. This indicates that mining-related land cover expanded substantially during the study period.
 
-By 2020, the distribution shifted slightly toward lower distances, suggesting an increase in mining-related surfaces.
+The density distribution shown in Figure~\ref{fig:mining_spectral} demonstrates this progressive temporal shift toward lower spectral distances, indicating increasing similarity of landscape conditions to the mining reference signature over time.
 
-The strongest shift occurred in 2022, when a larger proportion of pixels exhibited low spectral distance to the mining centroid. This indicates that mining-related land cover expanded substantially during the study period.
-
-This trend is illustrated in Figure~\ref{fig:mining_spectral}.
+The scatter plot further illustrates the distribution of landscape pixels within spectral space using red and near-infrared reflectance values. The mining centroid, shown as the red diamond, represents the reference mining spectral signature derived from the 2018 dataset. Pixels located closer to this centroid exhibit greater spectral similarity to mining-related surfaces, whereas pixels located farther away represent less disturbed land-cover conditions. The broader spread observed in later years suggests increasing spectral heterogeneity associated with mining expansion.The broader spread of pixels observed in later years suggests increasing spectral heterogeneity associated with mining expansion.
 
 \begin{figure}[H] \centering \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{maps/mining_spectral_analysis.png} \caption{Spectral distance of landscape pixels to the mining centroid between 2018 and 2022.} \label{fig:mining_spectral} \end{figure}
 
 \section{Spectral Analysis of Forest Condition}
 
-The spectral analysis of forest condition reveals an opposite trend to that observed for mining.
+The spectral analysis of forest condition reveals an opposite trend to that observed for mining. The change in forest spectral condition is shown in Figure~\ref{fig:forest_spectral}.
 
-In 2018, most pixels exhibited low spectral distance from the forest centroid, indicating that the landscape retained the characteristics of healthy forest.
+In 2018, most pixels exhibited low spectral distance from the forest centroid, indicating that the landscape retained characteristics similar to healthy forest conditions. By 2020, the distribution shifted slightly toward higher distances, suggesting the early stages of forest degradation. The most pronounced shift occurred in 2022, where a larger proportion of pixels exhibited high spectral distance from the forest centroid, indicating increasing divergence from the original forest condition.
 
-By 2020, the distribution shifted slightly toward higher distances, suggesting the early stages of forest degradation.
+The density distribution shown in Figure~\ref{fig:forest_spectral} demonstrates this progressive temporal shift toward larger spectral distances, indicating that forest areas became increasingly dissimilar to the 2018 reference condition over time.
 
-The most pronounced shift occurred in 2022, where a larger proportion of pixels exhibited high spectral distance from the forest centroid, indicating increasing divergence from the original forest condition.
-
-The change in forest spectral condition is shown in Figure~\ref{fig:forest_spectral}.
+The scatter plot further illustrates the distribution of landscape pixels relative to the healthy forest centroid represented by the green diamond. Pixels located closer to the centroid retain spectral characteristics more similar to healthy vegetation, while increasing distance indicates greater divergence from the reference forest condition. The wider spread observed in 2022 suggests progressive degradation and increasing variation in vegetation condition across the landscape.
 
 \begin{figure}[H] \centering \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{maps/forest_spectral_analysis.png} \caption{Spectral distance of landscape pixels to the healthy forest centroid between 2018 and 2022.} \label{fig:forest_spectral} \end{figure}
 
