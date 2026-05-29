@@ -12,6 +12,8 @@
 \usepackage{caption}
 \usepackage[hidelinks]{hyperref}
 \usepackage[numbers]{natbib}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 
 \setlength{\parskip}{0.5em}
 \setlength{\textfloatsep}{10pt}
@@ -58,9 +60,9 @@
 
 Mining-induced forest degradation has become an increasing environmental concern in tropical regions due to the expansion of both artisanal and large-scale mining activities. In Ghana, the Pra River Basin has experienced significant environmental pressure resulting from vegetation loss, land disturbance, and ecosystem degradation associated with gold mining. Effective approaches are therefore required to monitor changes in forest condition and identify the spatial extent of mining-related environmental impacts.
 
-This study assessed mining-induced forest degradation within the Pra River Basin using a multi-temporal remote sensing approach based on Sentinel-2 satellite imagery acquired in 2018, 2020, and 2022. The analysis integrated Normalized Difference Vegetation Index (NDVI) classification with spectral distance analysis and fuzzy classification techniques to evaluate changes in vegetation condition over time and detect areas affected by mining activity.
+This study assessed mining-induced forest degradation within the Pra River Basin using a multi-temporal remote sensing approach based on Sentinel-2 satellite imagery acquired in 2018, 2020, and 2022. The analysis integrated NDVI-based land-cover classification, fuzzy classification, and spectral distance analysis to evaluate changes in vegetation condition over time and detect areas affected by mining activity.
 
-The results showed a progressive decline in vegetation condition across the study area, with substantial reductions observed between 2020 and 2022. NDVI change detection indicated that approximately 13.4\% of the study area experienced vegetation decline, while only 4.5\% showed vegetation recovery. Spectral distance analysis further revealed gradual ecological deterioration in areas surrounding active mining zones, demonstrating that degradation extended beyond areas of direct vegetation removal.
+The results showed a progressive decline in vegetation condition across the study area, with the largest reductions observed between 2020 and 2022. NDVI change detection indicated that approximately 13.4\% of the study area experienced vegetation decline, while only 4.5\% showed vegetation recovery. Spectral distance analysis further revealed gradual ecological deterioration in areas surrounding active mining zones, demonstrating that degradation extended beyond areas of direct vegetation removal.
 
 The findings suggest that combining NDVI with spectral distance analysis provides a more comprehensive approach for detecting both direct forest loss and subtle changes in vegetation condition than single-index approaches alone. The study contributes to understanding mining-related environmental change in Ghana and demonstrates the usefulness of integrated remote sensing methods for monitoring forest degradation in tropical landscapes.
 
@@ -326,6 +328,58 @@ A false-colour composite is presented in Figure~\ref{fig:false_colour}. In this 
 
 This study employed a multi-temporal remote sensing approach to assess mining-induced forest degradation in the Pra River Basin. Sentinel-2 satellite imagery from 2018, 2020, and 2022 was used to evaluate changes in vegetation condition over time.
 
+The overall methodological workflow used in this study is illustrated in Figure~\ref{fig:method_framework}.
+
+\begin{figure}[H]
+\centering
+
+\begin{tikzpicture}[
+node distance=1.2cm,
+box/.style={
+rectangle,
+draw=black,
+rounded corners,
+minimum width=8cm,
+minimum height=1cm,
+align=center
+},
+arrow/.style={
+-{Latex[length=3mm]},
+thick
+}
+]
+
+\node (a) [box] {Sentinel-2 Imagery\\(2018, 2020, 2022)};
+
+\node (b) [box, below=of a]
+{Image Acquisition and Preprocessing};
+
+\node (c) [box, below=of b]
+{NDVI Calculation and Land-Cover Classification};
+
+\node (d) [box, below=of c]
+{Spectral Distance Analysis and Centroid Identification};
+
+\node (e) [box, below=of d]
+{Temporal Comparison (2018--2022)};
+
+\node (f) [box, below=of e]
+{\textbf{Assessment of Mining-Induced Forest Degradation}};
+
+\draw [arrow] (a) -- (b);
+\draw [arrow] (b) -- (c);
+\draw [arrow] (c) -- (d);
+\draw [arrow] (d) -- (e);
+\draw [arrow] (e) -- (f);
+
+\end{tikzpicture}
+
+\caption{Methodological framework used for assessing mining-induced forest degradation in the Pra River Basin.}
+\label{fig:method_framework}
+
+\end{figure}
+
+
 The methodological framework consisted of four main stages:
 
 \begin{itemize}
@@ -334,6 +388,7 @@ The methodological framework consisted of four main stages:
 \item Spectral distance analysis
 \item Temporal assessment of forest degradation
 \end{itemize}
+
 
 \section{Data Sources}
 
@@ -427,6 +482,7 @@ The NDVI approach has been widely applied in vegetation monitoring and environme
 A rule-based classification procedure was developed to distinguish major land-cover types within the Pra River Basin. The classification was based on NDVI threshold values, which were defined using typical vegetation characteristics in tropical environments and refined through visual comparison with true-colour and false-colour composite images.
 
 The classification scheme is summarized in Table~\ref{tab:ndvi_classes}.
+The threshold values were based on commonly reported NDVI ranges for tropical vegetation and non-vegetated surfaces and were refined through visual interpretation of the Sentinel-2 true-colour and false-colour composites.
 
 \begin{table}[H]
 \centering
@@ -484,6 +540,7 @@ The fuzzy classification procedure consisted of the following steps:
 \begin{itemize}
 \item The four-band spectral stack from 2018 (blue, green, red, and near-infrared) was used as the baseline dataset.
 \item K-means clustering was applied to divide the image into three major spectral classes.
+\item Three clusters were selected because the primary objective was to distinguish healthy vegetation, mining-related surfaces, and intermediate transitional conditions within the landscape.
 \item The resulting cluster centroids were interpreted based on their spectral characteristics.
 \item The centroid with the highest Red/NIR ratio was identified as the mining class.
 \item The centroid with the highest NDVI value was identified as the healthy vegetation class.
@@ -518,9 +575,9 @@ The NDVI maps for 2018, 2020, and 2022 show a progressive decline in vegetation 
 
 In 2018, most parts of the basin exhibited relatively high NDVI values, indicating the presence of dense and healthy vegetation. The central and western portions of the study area were dominated by high positive NDVI values.
 
-By 2020, localized areas of lower NDVI had begun to appear, particularly within the central portion of the basin and in areas associated with mining activity. Some reductions were also visible near drainage networks and river corridors, indicating the early stages of vegetation disturbance.
+By 2020, localized areas of lower NDVI had begun to appear, particularly within the central portion of the basin and in areas associated with mining activity. These patterns indicate the early stages of vegetation disturbance within the study area.
 
-The 2022 NDVI map shows a much larger extent of reduced NDVI values. Areas of low NDVI became more widespread, especially around the Pra River and its tributaries. Several areas that previously exhibited high NDVI in 2018 had transitioned to values characteristic of disturbed vegetation, bare soil, or mining surfaces.
+The 2022 NDVI map shows a much larger extent of reduced NDVI values. Areas of low NDVI became more widespread across the basin, particularly within the central disturbed zone and surrounding landscapes. Several areas that previously exhibited high NDVI in 2018 had transitioned to values characteristic of disturbed vegetation, bare soil, or mining surfaces.
 
 The largest change in vegetation condition occurred between 2020 and 2022, as shown in Figure~\ref{fig:ndvi_timeseries}.
 
@@ -531,7 +588,7 @@ The largest change in vegetation condition occurred between 2020 and 2022, as sh
 
 The NDVI difference map for 2018--2022 shows the spatial pattern of vegetation change within the Pra River Basin. Negative NDVI values, shown in shades of red, indicate areas where vegetation condition declined between 2018 and 2022. Darker red tones represent stronger reductions in vegetation condition, while lighter pink areas indicate relatively minor decreases in NDVI values. Positive values, shown in green, indicate areas where vegetation condition improved, while values close to zero represent areas with little or no change.
 
-The map shows that vegetation decline was more widespread than vegetation increase. Areas of NDVI decrease are distributed across much of the basin, with stronger reductions occurring around river corridors and mining-influenced zones. This suggests that vegetation disturbance was spatially associated with areas affected by mining activity.
+The map shows that vegetation decline was more widespread than vegetation increase. Areas of NDVI decrease are distributed across much of the basin, with stronger reductions occurring in mining-influenced zones and surrounding landscapes. This suggests that vegetation disturbance was spatially associated with areas affected by mining activity.
 
 The accompanying NDVI change distribution chart shows that most of the study area remained relatively stable, with 82.1\% classified as no change. However, 13.4\% of the study area experienced vegetation decrease, while only 4.5\% showed vegetation increase. This indicates that vegetation loss was more extensive than vegetation recovery during the study period.
 
@@ -539,15 +596,17 @@ Overall, the combined map and bar chart demonstrate that although much of the ba
 
 \begin{figure}[H] \centering \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{maps/ndvi_change_map_and_bar_chart.png} \caption{NDVI difference map and NDVI change distribution in the Pra River Basin between 2018 and 2022.} \label{fig:ndvi_change_combined} \end{figure}
 
+
+
 \section{Land-Cover Classification}
 
 The NDVI-based classification distinguished five land-cover classes within the Pra River Basin: water bodies, active mining, healthy vegetation, disturbed vegetation, and bare soil.
 
 Healthy vegetation remained the dominant land-cover class in 2022. However, substantial areas of disturbed vegetation and active mining were also identified.
 
-Disturbed vegetation was concentrated around mining areas and along river corridors, suggesting that the effects of mining extend beyond the areas of direct excavation.
+Disturbed vegetation was concentrated around mining areas and adjacent landscapes, suggesting that the effects of mining extend beyond the areas of direct excavation.
 
-The active mining class was mainly located in the central and southern parts of the study area, particularly close to the Pra River and its tributaries. Many mining pixels occurred in locations that had exhibited relatively high NDVI values in 2018, indicating recent vegetation removal.
+The active mining class was mainly concentrated within the central and southern portions of the study area. Many mining pixels occurred in locations that had exhibited relatively high NDVI values in 2018, indicating recent vegetation removal.
 
 Bare soil areas were also identified around the mining sites, representing areas where vegetation had been removed but where mining activity was not currently active.
 
@@ -555,7 +614,6 @@ The spatial distribution of classified land-cover types is shown in Figure~\ref{
 
 
 \begin{figure}[H] \centering \includegraphics[width=0.85\textwidth,height=0.55\textheight,keepaspectratio]{maps/vegetation_mining_2022.png} \caption{NDVI-based land-cover classification showing mining areas in 2022.} \label{fig:classification_2022} \end{figure}
-
 
 
 
@@ -573,6 +631,7 @@ The spatial distribution of mining activity is presented in Figure~\ref{fig:mini
 
 \begin{figure}[H] \centering \includegraphics[width=0.82\textwidth,height=0.55\textheight,keepaspectratio]{maps/mining-distribution-map-2022-1.png} \caption{Spatial distribution of active mining areas in the Pra River Basin in 2022.} \label{fig:mining_distribution} \end{figure}
 
+
 \section{Spectral Analysis of Mining Areas}
 
 The spectral distance analysis shows that the spectral properties of the landscape became progressively more similar to the mining centroid between 2018 and 2022. The change in mining spectral condition is shown in Figure~\ref{fig:mining_spectral}.
@@ -581,7 +640,7 @@ In 2018, most pixels exhibited relatively large distances from the mining centro
 
 The density distribution shown in Figure~\ref{fig:mining_spectral} demonstrates this progressive temporal shift toward lower spectral distances, indicating increasing similarity of landscape conditions to the mining reference signature over time.
 
-The scatter plot further illustrates the distribution of landscape pixels within spectral space using red and near-infrared reflectance values. The mining centroid, shown as the red diamond, represents the reference mining spectral signature derived from the 2018 dataset. Pixels located closer to this centroid exhibit greater spectral similarity to mining-related surfaces, whereas pixels located farther away represent less disturbed land-cover conditions. The broader spread observed in later years suggests increasing spectral heterogeneity associated with mining expansion.The broader spread of pixels observed in later years suggests increasing spectral heterogeneity associated with mining expansion.
+The scatter plot further illustrates the distribution of landscape pixels within spectral space using red and near-infrared reflectance values. The mining centroid, shown as the red diamond, represents the reference mining spectral signature derived from the 2018 dataset. Pixels located closer to this centroid exhibit greater spectral similarity to mining-related surfaces, whereas pixels located farther away represent less disturbed land-cover conditions. The broader spread observed in later years suggests increasing spectral heterogeneity associated with mining expansion.
 
 \begin{figure}[H] \centering \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{maps/mining_spectral_analysis.png} \caption{Spectral distance of landscape pixels to the mining centroid between 2018 and 2022.} \label{fig:mining_spectral} \end{figure}
 
@@ -599,9 +658,9 @@ The scatter plot further illustrates the distribution of landscape pixels relati
 
 \section{Summary of Results}
 
-The results demonstrate that vegetation condition declined substantially between 2018 and 2022 within the Pra River Basin. NDVI analysis revealed widespread reductions in vegetation condition, particularly around river corridors and areas affected by mining activity.
+The results demonstrate that vegetation condition declined substantially between 2018 and 2022 within the Pra River Basin. NDVI analysis revealed widespread reductions in vegetation condition, particularly in areas affected by mining activity.
 
-Mining activity expanded considerably during the study period and was concentrated within riverine environments. At the same time, spectral distance analysis showed that remaining forest areas became progressively less similar to the 2018 healthy forest reference condition.
+Mining activity expanded considerably during the study period and was concentrated within specific mining-influenced areas of the basin. At the same time, spectral distance analysis showed that remaining forest areas became progressively less similar to the 2018 healthy forest reference condition.
 
 These findings indicate that mining contributed not only to direct vegetation removal but also to broader forest degradation across the surrounding landscape. The combined use of NDVI and spectral distance analysis therefore provided complementary evidence of both land-cover change and gradual ecological deterioration within the study area.
 
@@ -619,7 +678,7 @@ The results of the NDVI time-series analysis revealed a progressive decline in v
 
 The largest decline in vegetation condition occurred between 2020 and 2022, suggesting that forest disturbance accelerated during the latter part of the study period. This pattern is consistent with reports of increasing artisanal and illegal mining activities in southern Ghana during recent years. The widespread reduction in NDVI values indicates that mining expansion has contributed significantly to the degradation of vegetation cover within the basin.
 
-The NDVI difference map further demonstrated that vegetation decrease was concentrated around river corridors and mining-influenced landscapes. This spatial pattern reflects the tendency for mining operations to occur near rivers and floodplains where alluvial gold deposits are abundant. As vegetation is removed for excavation and mining infrastructure, surrounding forest areas become increasingly fragmented and degraded.
+The NDVI difference map further demonstrated that vegetation decrease was concentrated within mining-influenced landscapes. This spatial pattern reflects the concentration of mining activity within specific portions of the basin and the associated removal of vegetation in surrounding landscapes. As vegetation is removed for excavation and mining infrastructure, surrounding forest areas become increasingly fragmented and degraded.
 
 The NDVI change distribution analysis showed that vegetation decrease accounted for a larger proportion of the study area than vegetation increase. Although most areas remained relatively stable, the proportion of vegetation decline indicates that mining-related disturbance represents a significant environmental concern within the basin.
 
@@ -699,7 +758,7 @@ Despite these limitations, the integrated use of NDVI and spectral distance anal
 
 This study investigated mining-induced forest degradation within Ghana’s Pra River Basin using a multi-temporal remote sensing approach based on Sentinel-2 imagery acquired in 2018, 2020, and 2022. The research combined NDVI-based land cover classification with fuzzy spectral distance analysis to assess changes in vegetation condition and identify the spatial influence of mining activities across the basin.
 
-The results revealed substantial vegetation decline within the study area during the study period. NDVI analysis showed progressive reductions in vegetation condition, particularly between 2020 and 2022, indicating accelerated forest disturbance. Areas exhibiting strong vegetation decrease were concentrated around river corridors and known mining zones, demonstrating the close relationship between mining activity and environmental degradation within the basin.
+The results revealed substantial vegetation decline within the study area during the study period. NDVI analysis showed progressive reductions in vegetation condition, particularly between 2020 and 2022, indicating accelerated forest disturbance. Areas exhibiting strong vegetation decrease were concentrated within mining-influenced landscapes and known mining zones, demonstrating the close relationship between mining activity and environmental degradation within the basin.
 
 The land cover classification further identified active mining areas characterized by low NDVI values and recent vegetation removal. Mining activities were spatially concentrated near river systems, where extensive vegetation clearing and surface disturbance were observed.
 
@@ -713,7 +772,7 @@ Overall, the study demonstrates that remote sensing techniques provide a reliabl
 
 Based on the findings of this study, several recommendations are proposed to support environmental monitoring and sustainable land management within the Pra River Basin.
 
-First, environmental agencies should strengthen monitoring and regulation of mining activities, particularly along river corridors and forested landscapes where degradation is most severe. Improved enforcement of environmental regulations may help reduce uncontrolled vegetation removal and land disturbance.
+First, environmental agencies should strengthen monitoring and regulation of mining activities, particularly within mining-affected and forested landscapes where degradation is most severe. Improved enforcement of environmental regulations may help reduce uncontrolled vegetation removal and land disturbance.
 
 Second, regular remote sensing monitoring should be incorporated into environmental management programmes within the basin. The use of freely available Sentinel-2 imagery provides an efficient and cost-effective approach for detecting vegetation loss and tracking mining expansion over time.
 
