@@ -364,7 +364,7 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_5335ae6327b_21301_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_16a173369d33f_92695_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
@@ -743,15 +743,11 @@ print(paste("Forest class is Class", forest_class))
 
 ![](maps/ndvi-time-series-1.png)<!-- -->
 
-### 5.2 NDVI Change Detection and bar chart distribution
+### 5.2 NDVI Change Detection and Bar Chart Distribution
 
     ## |---------|---------|---------|---------|=========================================                                          
 
     ## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          
-
-    ## |---------|---------|---------|---------|=========================================                                          
-
-    ## |---------|---------|---------|---------|=========================================                                          
 
 ![](maps/ndvi-change-combined-1.png)<!-- -->
 
@@ -760,35 +756,71 @@ print(paste("Forest class is Class", forest_class))
 #### 5.3.1 Vegetation Classification Map
 
 ``` r
-class_small <- terra::aggregate(vegetation_classes, fact = 8, fun = modal, na.rm = TRUE)
+# Aggregate land cover raster
 
-df_class <- as.data.frame(class_small, xy = TRUE)
-df_class <- na.omit(df_class)
-colnames(df_class) <- c("x", "y", "class")
-
-class_colors <- c(
-  "1" = palette$water_bodies,     # Dodger blue - Water
-  "2" = palette$mining,           # Coral red - Active Mining
-  "3" = palette$healthy_forest,   # Forest green - Healthy Vegetation
-  "4" = palette$disturbed_forest, # Sandy brown - Disturbed Vegetation
-  "5" = palette$bare_soil         # Tan - Bare Soil
+class_small <- terra::aggregate(
+  vegetation_classes,
+  fact = 8,
+  fun = modal,
+  na.rm = TRUE
 )
 
-im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
+
+# Convert to dataframe
+
+df_class <- as.data.frame(class_small, xy = TRUE)
+colnames(df_class) <- c("x", "y", "class")
+df_class <- na.omit(df_class)
+
+
+df_class$class <- factor(
+  df_class$class,
+  levels = c(1, 2, 3, 4, 5),
+  labels = c(
+    "Water Bodies",
+    "Active Mining",
+    "Healthy Vegetation",
+    "Disturbed Vegetation",
+    "Bare Soil"
+  )
+)
+
+
+
+class_colors <- c(
+  "Water Bodies" = "#1f78b4",
+  "Active Mining" = "#e31a1c",
+  "Healthy Vegetation" = "#33a02c",
+  "Disturbed Vegetation" = "#FFC125",
+  "Bare Soil" = "#c2a25a"
+)
+
+
+# Land cover map
+
+
+im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = class)) +
   geom_raster() +
   scale_fill_manual(
     values = class_colors,
-    name = "Land Cover Class",
-    labels = c(
-      "1" = "Water Bodies",
-      "2" = "Active Mining",
-      "3" = "Healthy Vegetation",
-      "4" = "Disturbed Vegetation",
-      "5" = "Bare Soil"
-    )
+    name = "Land Cover Class"
   ) +
   coord_equal() +
-  labs(title = "Land Cover Classification Showing Mining Areas (2022)")
+  labs(
+    title = "Land Cover Classification Showing Mining Areas (2022)",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right",
+    plot.background = element_rect(fill = "white", color = NA)
+  )
 
 im_class_map
 ```
@@ -796,8 +828,14 @@ im_class_map
 ![](maps/vegetation-map-1.png)<!-- -->
 
 ``` r
-ggsave("maps/vegetation_mining_2022.png", im_class_map,
-       width = 10, height = 6, dpi = 300, bg = "white")
+ggsave(
+  "maps/vegetation_mining_2022.png",
+  im_class_map,
+  width = 10,
+  height = 6,
+  dpi = 300,
+  bg = "white"
+)
 ```
 
 ### 5.4 Mining Distribution and Influence
@@ -807,6 +845,15 @@ ggsave("maps/vegetation_mining_2022.png", im_class_map,
     ## |---------|---------|---------|---------|=========================================                                          
 
 ![](maps/mining-distribution-map-2022-1.png)<!-- -->
+
+    ##                  Class Percentage
+    ## 1         Water Bodies        0.9
+    ## 2        Active Mining        3.2
+    ## 3   Healthy Vegetation       31.5
+    ## 4 Disturbed Vegetation       43.1
+    ## 5            Bare Soil       21.4
+
+![](maps/mining-distribution-map-2022-2.png)<!-- -->
 
 ### 5.5 Spectral Analysis of Mining Areas
 
