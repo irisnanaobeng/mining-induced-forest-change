@@ -776,43 +776,86 @@ ggsave("maps/ndvi_timeseries.png", combined_ndvi,
        width = 18, height = 8, dpi = 300, bg = "white")
 ```
 
-### 5.2 NDVI Change Detection and bar chart distribution
+
+### 5.2 NDVI Change Detection and Bar Chart Distribution
 
 ```{r ndvi-change-combined, fig.width=11, fig.height=12, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-# NDVI difference and change classes
-
+# NDVI difference and classification
 
 ndvi_diff_18_22 <- ndvi_2022 - ndvi_2018
 
 ndvi_change_18_22_class <- ndvi_change_class(ndvi_diff_18_22)
-ndvi_change_discrete <- terra::aggregate(ndvi_change_18_22_class, fact = 8)
 
-df_change <- as.data.frame(ndvi_change_discrete, xy = TRUE, na.rm = TRUE)
-colnames(df_change) <- c("x", "y", "class")
 
-df_change$class <- factor(df_change$class,
-                          levels = c(0, 1, 2),
-                          labels = c("No Change", "Vegetation Increase", "Vegetation Decrease"))
+# Map data 
+
+df_change_map <- terra::aggregate(
+  ndvi_change_18_22_class,
+  fact = 8,
+  fun = modal,
+  na.rm = TRUE
+)
+
+df_change_map <- as.data.frame(df_change_map, xy = TRUE, na.rm = TRUE)
+colnames(df_change_map) <- c("x", "y", "class")
+
+df_change_map$class <- factor(
+  df_change_map$class,
+  levels = c(0, 1, 2),
+  labels = c("No Change", "Vegetation Increase", "Vegetation Decrease")
+)
+
+
+# Statistics data 
+
+df_change_stats <- as.data.frame(ndvi_change_18_22_class, xy = TRUE, na.rm = TRUE)
+colnames(df_change_stats) <- c("x", "y", "class")
+
+df_change_stats$class <- factor(
+  df_change_stats$class,
+  levels = c(0, 1, 2),
+  labels = c("No Change", "Vegetation Increase", "Vegetation Decrease")
+)
+
+class_counts <- table(df_change_stats$class)
+
+ndvi_change_summary <- data.frame(
+  class = names(class_counts),
+  pixel_count = as.numeric(class_counts),
+  percentage = as.numeric(class_counts) / sum(class_counts) * 100
+)
 
 
 # NDVI change map
 
-
-p_ndvi_diff_18_22 <- plot_singleband_gg(ndvi_diff_18_22, title = "NDVI Difference (2022–2018)") +
-  scale_fill_gradient2(low = "#B2182B", mid = "#F2F2F2", high = "#008B45",
-                       midpoint = 0, limits = c(-0.6, 0.4),
-                       name = expression(Delta * "NDVI")) +
-  labs(x = "Longitude", y = "Latitude") +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "#000000"),
-        axis.title = element_text(size = 12),
-        axis.text = element_text(size = 10),
-        panel.grid = element_line(color = "grey90", linewidth = 0.3),
-        legend.title = element_text(face = "bold"),
-        legend.position = "right",
-        plot.background = element_rect(fill = "white", color = NA))
+p_ndvi_diff <- ggplot(df_change_map, aes(x = x, y = y, fill = class)) +
+  geom_raster() +
+  scale_fill_manual(
+    values = c(
+      "Vegetation Decrease" = "#E69F00",
+      "No Change" = "#F2F2F2",
+      "Vegetation Increase" = "#2166AC"
+    ),
+    name = "NDVI Change"
+  ) +
+  coord_equal() +
+  labs(
+    title = "NDVI Change (2018–2022)",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "#000000"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right",
+    plot.background = element_rect(fill = "white", color = NA)
+  )
 
 # -------------------------------
 # Custom NDVI interpretation legend
@@ -820,37 +863,44 @@ p_ndvi_diff_18_22 <- plot_singleband_gg(ndvi_diff_18_22, title = "NDVI Differenc
 
 ndvi_legend <- ggplot() +
   annotate("rect", xmin = 0, xmax = 1, ymin = 0.08, ymax = 0.92,
-         fill = "white", color = "grey65", linewidth = 0.5)+
-  annotate("text", x = 0.08, y = 0.82, label = "NDVI Change Interpretation",
+           fill = "white", color = "grey65", linewidth = 0.5) +
+  annotate("text", x = 0.08, y = 0.82,
+           label = "NDVI Change Interpretation",
            hjust = 0, fontface = "bold", size = 4.2) +
   annotate("rect", xmin = 0.08, xmax = 0.16, ymin = 0.60, ymax = 0.68,
-           fill = "#B2182B", color = "grey40") +
-  annotate("text", x = 0.20, y = 0.64, label = "Vegetation decrease",
+           fill = "#E69F00", color = "grey40") +
+  annotate("text", x = 0.20, y = 0.64,
+           label = "Vegetation decrease",
            hjust = 0, size = 3.7) +
   annotate("rect", xmin = 0.08, xmax = 0.16, ymin = 0.42, ymax = 0.50,
            fill = "#F2F2F2", color = "grey40") +
-  annotate("text", x = 0.20, y = 0.48, label = "Little or no change",
+  annotate("text", x = 0.20, y = 0.48,
+           label = "Little or no change",
            hjust = 0, size = 3.7) +
   annotate("rect", xmin = 0.08, xmax = 0.16, ymin = 0.24, ymax = 0.32,
-           fill = "#008B45", color = "grey40") +
-  annotate("text", x = 0.20, y = 0.28, label = "Vegetation increase",
+           fill = "#2166AC", color = "grey40") +
+  annotate("text", x = 0.20, y = 0.28,
+           label = "Vegetation increase",
            hjust = 0, size = 3.7) +
   coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), expand = FALSE) +
   theme_void()
 
-map_with_legend <- p_ndvi_diff_18_22 | ndvi_legend +
+map_with_legend <- p_ndvi_diff | ndvi_legend +
   plot_layout(widths = c(3.2, 1))
 
 # -------------------------------
-# NDVI bar chart
+# NDVI bar chart (CONSISTENT)
 # -------------------------------
 
-ndvi_change_clean <- df_change[!is.na(df_change$class), ]
+ndvi_change_clean <- df_change_stats[!is.na(df_change_stats$class), ]
+
 class_counts <- table(ndvi_change_clean$class)
 
 ndvi_change_summary <- data.frame(
-  class = factor(names(class_counts),
-                 levels = c("Vegetation Decrease", "No Change", "Vegetation Increase")),
+  class = factor(
+    names(class_counts),
+    levels = c("Vegetation Decrease", "No Change", "Vegetation Increase")
+  ),
   pixel_count = as.numeric(class_counts),
   percentage = as.numeric(class_counts) / sum(class_counts) * 100
 )
@@ -860,40 +910,56 @@ ndvi_change_bar <- ggplot(ndvi_change_summary,
   geom_col(width = 0.65) +
   geom_text(aes(label = paste0(round(percentage, 1), "%")),
             vjust = -0.4, size = 5, fontface = "bold") +
-  scale_fill_manual(values = c("Vegetation Decrease" = "#B2182B",
-                               "No Change" = "#C1CDC1",
-                               "Vegetation Increase" = "#008B45"),
-                    guide = "none") +
-  scale_y_continuous(labels = percent_format(scale = 1),
-                     limits = c(0, 100),
-                     breaks = c(0, 25, 50, 75, 100),
-                     expand = expansion(mult = c(0, 0.05))) +
-  labs(title = "NDVI Change Distribution (2018–2022)",
-       x = "NDVI Change Category",
-       y = "Percentage of Study Area (%)") +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "black"),
-        axis.text.x = element_text(size = 11),
-        axis.title = element_text(size = 12),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.background = element_rect(fill = "white", color = NA))
+  scale_fill_manual(
+    values = c(
+      "Vegetation Decrease" = "#E69F00",
+      "No Change" = "#F2F2F2",
+      "Vegetation Increase" = "#2166AC"
+    ),
+    guide = "none"
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(scale = 1),
+    limits = c(0, 100)
+  ) +
+  labs(
+    title = "NDVI Change Distribution (2018–2022)",
+    x = "Class",
+    y = "Percentage (%)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "black"),
+    axis.text.x = element_text(size = 11),
+    axis.title = element_text(size = 12),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA)
+  )
 
-# -------------------------------
-# Combine map on top and bar chart below
-# -------------------------------
+
+# Combined figure
 
 combined_ndvi_change <- map_with_legend / ndvi_change_bar +
-  plot_layout(heights = c(1.35, 1)) +
-  plot_annotation(title = "NDVI Change Analysis in the Pra River Basin (2018–2022)",
-                  theme = theme(plot.title = element_text(hjust = 0.5, face = "bold",
-                                                          size = 18, color = "black")))
+  plot_layout(heights = c(1.3, 1)) +
+  plot_annotation(
+    title = "NDVI Change Analysis (2018–2022)",
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 18)
+    )
+  )
 
 combined_ndvi_change
 
-ggsave("maps/ndvi_change_map_and_bar_chart.png",
-       combined_ndvi_change,
-       width = 11, height = 12, dpi = 300, bg = "white")
+# Save output
+ggsave(
+  "maps/ndvi_change_map_and_bar_chart.png",
+  combined_ndvi_change,
+  width = 11,
+  height = 12,
+  dpi = 300,
+  bg = "white"
+)
 ```
 
 ### 5.3 Land Cover Classification Map
@@ -902,40 +968,84 @@ ggsave("maps/ndvi_change_map_and_bar_chart.png",
 
 ```{r vegetation-map, fig.width=10, fig.height=6}
 
-class_small <- terra::aggregate(vegetation_classes, fact = 8, fun = modal, na.rm = TRUE)
 
-df_class <- as.data.frame(class_small, xy = TRUE)
-df_class <- na.omit(df_class)
-colnames(df_class) <- c("x", "y", "class")
+# Aggregate land cover raster
 
-class_colors <- c(
-  "1" = palette$water_bodies,     # Dodger blue - Water
-  "2" = palette$mining,           # Coral red - Active Mining
-  "3" = palette$healthy_forest,   # Forest green - Healthy Vegetation
-  "4" = palette$disturbed_forest, # Sandy brown - Disturbed Vegetation
-  "5" = palette$bare_soil         # Tan - Bare Soil
+class_small <- terra::aggregate(
+  vegetation_classes,
+  fact = 8,
+  fun = modal,
+  na.rm = TRUE
 )
 
-im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
+
+# Convert to dataframe
+
+df_class <- as.data.frame(class_small, xy = TRUE)
+colnames(df_class) <- c("x", "y", "class")
+df_class <- na.omit(df_class)
+
+
+df_class$class <- factor(
+  df_class$class,
+  levels = c(1, 2, 3, 4, 5),
+  labels = c(
+    "Water Bodies",
+    "Active Mining",
+    "Healthy Vegetation",
+    "Disturbed Vegetation",
+    "Bare Soil"
+  )
+)
+
+
+
+class_colors <- c(
+  "Water Bodies" = "#1f78b4",
+  "Active Mining" = "#e31a1c",
+  "Healthy Vegetation" = "#33a02c",
+  "Disturbed Vegetation" = "#FFC125",
+  "Bare Soil" = "#c2a25a"
+)
+
+
+# Land cover map
+
+
+im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = class)) +
   geom_raster() +
   scale_fill_manual(
     values = class_colors,
-    name = "Land Cover Class",
-    labels = c(
-      "1" = "Water Bodies",
-      "2" = "Active Mining",
-      "3" = "Healthy Vegetation",
-      "4" = "Disturbed Vegetation",
-      "5" = "Bare Soil"
-    )
+    name = "Land Cover Class"
   ) +
   coord_equal() +
-  labs(title = "Land Cover Classification Showing Mining Areas (2022)")
+  labs(
+    title = "Land Cover Classification Showing Mining Areas (2022)",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right",
+    plot.background = element_rect(fill = "white", color = NA)
+  )
 
 im_class_map
 
-ggsave("maps/vegetation_mining_2022.png", im_class_map,
-       width = 10, height = 6, dpi = 300, bg = "white")
+
+ggsave(
+  "maps/vegetation_mining_2022.png",
+  im_class_map,
+  width = 10,
+  height = 6,
+  dpi = 300,
+  bg = "white"
+)
 ```
 
 ### 5.4 Mining Distribution and Influence
@@ -966,40 +1076,137 @@ if(nrow(df_mining_points) > 4000){
 
 # --- Plot ---
 p_mining <- ggplot() +
-  
-  # Background NDVI
-  geom_raster(data = df_ndvi,
-              aes(x = x, y = y, fill = ndvi)) +
-  
-  # NDVI colour scale
-  scale_fill_viridis_c(option = "D", name = "NDVI") +
-  
-  # Mining points overlay
-  geom_point(data = df_mining_points,
-             aes(x = x, y = y),
-             color = "firebrick",
-             size = 0.5,
-             alpha = 0.3) +
-  
-  coord_equal() +
-  
-labs(
-  title = "Spatial Distribution of Active Mining Areas – Pra River Basin (2022)",
-  subtitle = "Red dots indicate classified active mining pixels",
-  x = "Longitude",
-  y = "Latitude"
-) +
 
-theme(
+  # Background NDVI
+  geom_raster(
+    data = df_ndvi,
+    aes(x = x, y = y, fill = ndvi)
+  ) +
+
+  # NDVI colour scale
+  scale_fill_viridis_c(
+    option = "D",
+    name = "Background NDVI"
+  ) +
+
+  # Mining points overlay
+  geom_point(
+    data = df_mining_points,
+    aes(x = x, y = y),
+    color = "#B22222",
+    size = 0.65,
+    alpha = 0.45
+  ) +
+
+  coord_equal() +
+
+  labs(
+    title = "Spatial Distribution of Active Mining Areas – Pra River Basin (2022)",
+    subtitle = "Red dots represent classified active mining pixels",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+
+  theme_minimal() +
+  
+  theme(
   plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
   plot.subtitle = element_text(hjust = 0.5, size = 11),
   panel.border = element_rect(color = "grey70", fill = NA, linewidth = 0.4)
 )
 
+
 p_mining
 
-ggsave("maps/mining_distribution_dots_2022.png", p_mining,
-       width = 10, height = 8, dpi = 300, bg = "white")
+ggsave(
+  "maps/mining_distribution_dots_2022.png",
+  p_mining,
+  width = 12,
+  height = 9,
+  dpi = 300,
+  bg = "white"
+)
+
+
+# Land cover statistics
+
+
+df_class_stats <- as.data.frame(
+  vegetation_classes,
+  xy = FALSE,
+  na.rm = TRUE
+)
+
+colnames(df_class_stats) <- "class"
+
+df_class_stats$class <- factor(
+  df_class_stats$class,
+  levels = c(1, 2, 3, 4, 5),
+  labels = c(
+    "Water Bodies",
+    "Active Mining",
+    "Healthy Vegetation",
+    "Disturbed Vegetation",
+    "Bare Soil"
+  )
+)
+
+class_counts <- table(df_class_stats$class)
+
+landcover_summary <- data.frame(
+  Class = names(class_counts),
+  Percentage = round(
+    as.numeric(class_counts) /
+      sum(class_counts) * 100,
+    1
+  )
+)
+
+landcover_summary
+
+
+
+# Land cover distribution chart
+
+
+landcover_bar <- ggplot(
+  landcover_summary,
+  aes(x = Class, y = Percentage, fill = Class)
+) +
+  geom_col(width = 0.7) +
+  geom_text(
+    aes(label = paste0(Percentage, "%")),
+    vjust = -0.3,
+    fontface = "bold",
+    size = 4
+  ) +
+  scale_fill_manual(values = class_colors) +
+  scale_y_continuous(
+    limits = c(0, 100),
+    expand = expansion(mult = c(0, 0.05))
+  ) +
+  labs(
+    title = "Land Cover Distribution in the Pra River Basin (2022)",
+    x = "Land Cover Class",
+    y = "Percentage of Study Area (%)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    axis.text.x = element_text(angle = 15, hjust = 1),
+    legend.position = "none"
+  )
+
+landcover_bar
+
+ggsave(
+  "maps/landcover_distribution_2022.png",
+  landcover_bar,
+  width = 9,
+  height = 6,
+  dpi = 300,
+  bg = "white"
+)
 ```
 
 ### 5.5 Spectral Analysis of Mining Areas
