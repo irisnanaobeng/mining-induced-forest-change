@@ -98,11 +98,11 @@ Mining-induced forest degradation is an increasing environmental concern in trop
 
 This study assessed mining-induced forest degradation within the Pra River Basin using a multi-temporal remote sensing approach based on Sentinel-2 satellite imagery acquired in 2018, 2020, and 2022. The analysis integrated NDVI-based land-cover classification, fuzzy classification, and spectral distance analysis to evaluate changes in vegetation condition over time and detect areas affected by mining-related disturbances.
 
-The results showed a progressive decline in vegetation condition in the study area, with the largest reductions observed between 2020 and 2022. NDVI change detection indicated that approximately 29.3\% of the study area experienced vegetation decline, while only 1.7\% showed vegetation recovery. Spectral distance analysis also revealed an increase in spectral divergence from reference forest conditions in areas surrounding mining-influenced zones, suggesting gradual ecological deterioration.
+The results showed a progressive decline in vegetation condition in the study area, with the largest reductions observed between 2020 and 2022. NDVI change detection indicated that approximately 29.3\% of the study area experienced vegetation decline relative to 2018 baseline levels, while only 1.7\% showed vegetation recovery. Spectral distance analysis further revealed progressive divergence from the 2018 forest reference condition in areas surrounding mining-influenced zones, suggesting increasing ecological degradation over time.
 
-The findings suggest that combining NDVI with spectral distance analysis provides a more comprehensive approach for detecting both direct forest loss and subtle changes in vegetation condition than single-index approaches alone. The study contributes to understanding the environmental change related to mining in Ghana and demonstrates the usefulness of integrated remote sensing methods to monitor forest degradation in tropical landscapes.
+The findings suggest that combining NDVI with spectral distance analysis may provide a more comprehensive approach for detecting both direct forest loss and subtle changes in vegetation condition than single-index approaches alone. The study contributes to understanding the environmental change related to mining in Ghana and demonstrates the usefulness of integrated remote sensing methods to monitor forest degradation in tropical landscapes. Limitations include the absence of field validation; results should therefore be interpreted as relative patterns rather than absolute measurements.
 
-\textbf{Keywords:} Forest degradation; Mining-related disturbance; Remote sensing; NDVI; Spectral distance analysis; Sentinel-2; Pra River Basin; Ghana.
+\textbf{Keywords:} Forest degradation, Mining-related disturbance, Remote sensing, NDVI, Spectral distance analysis, Sentinel-2, Pra River Basin, Ghana.
 
 \end{abstract}
 
@@ -208,7 +208,7 @@ Mining-induced forest degradation has become a major environmental concern in ma
 
 The increasing environmental impacts associated with mining-related activities have created a growing need for effective monitoring approaches capable of identifying both direct land-cover change and gradual ecological degradation. Conventional field-based environmental assessments are often limited by cost, accessibility, and temporal constraints, particularly in tropical environments where vegetation cover is dense and large areas are difficult to access. Consequently, remote sensing has emerged as an important tool for environmental monitoring because it allows large-scale vegetation analysis to be conducted efficiently over long periods of time.
 
-This chapter reviews literature related to mining-induced forest degradation and the application of remote sensing techniques in vegetation monitoring. The chapter first discusses the environmental impacts of mining activities within tropical forest ecosystems before examining mining-related environmental change in Ghana. The review then explores the theoretical foundations and applications of remote sensing appro,aches including the Normalized Difference Vegetation Index (NDVI), spectral distance analysis, and Sentinel-2 imagery. Finally, the chapter identifies gaps within existing research and explains the relevance of the present study.
+This chapter reviews literature related to mining-induced forest degradation and the application of remote sensing techniques in vegetation monitoring. The chapter first discusses the environmental impacts of mining activities within tropical forest ecosystems before examining mining-related environmental change in Ghana. The review then explores the theoretical foundations and applications of remote sensing approaches including the Normalized Difference Vegetation Index (NDVI), spectral distance analysis, and Sentinel-2 imagery. Finally, the chapter identifies gaps within existing research and explains the relevance of the present study.
 
 
 \section{Forest Degradation in Tropical Environments}
@@ -270,11 +270,11 @@ Despite its widespread application, NDVI also has several limitations. Because t
 
 \section{Spectral Distance Analysis}
 
-Spectral distance analysis is a remote sensing technique used to evaluate the similarity or dissimilarity between spectral signatures. The technique is based on the assumption that different land-cover types and surface conditions across multiple wavelength bands \citep{richards2013remote}.
+Spectral distance analysis is a remote sensing technique used to evaluate the similarity or dissimilarity between spectral signatures. The technique is based on the assumption that different land-cover types and surface conditions exhibit unique spectral signatures across multiple wavelength bands, allowing them to be distinguished using remotely sensed imagery \citep{richards2013remote}.
 
 As forest vegetation becomes degraded, its spectral properties gradually diverge from those of healthy vegetation. Spectral distance methods therefore quantify changes in vegetation condition relative to a reference spectral signature.
 
-One of the most commonly applied spectral distance measures is Euclidean distance, which calculates the distance between observed spectral values and a reference centroid across multiple spectral bands computed across selected bands.
+One of the most commonly applied spectral distance measures is Euclidean distance, which calculates the distance between observed spectral values and a reference centroid across multiple spectral bands.
 
 \begin{equation}
 D = \sqrt{(B-B_c)^2 + (G-G_c)^2 + (R-R_c)^2 + (NIR-NIR_c)^2}
@@ -292,7 +292,7 @@ Lower spectral distance values indicate greater similarity to the reference cond
 
 Spectral distance analysis is particularly useful for detecting gradual environmental change because it incorporates information from multiple spectral bands simultaneously. Unlike single-index approaches such as NDVI, spectral distance methods are capable of identifying subtle changes in vegetation condition that may not be immediately visible through vegetation greenness alone.
 
-Previous studies have applied spectral distance analysis in the monitoring of forest degradation caused by logging, agricultural expansion, fire, and mining activities \citep{tarazona2020monitoring}. Combining spectral distance analysis with NDVI may therefore improve the detection of both direct vegetation loss and progressive ecological degradation.
+Previous studies have applied spectral distance analysis to monitor forest degradation associated with logging, agricultural expansion, fire, and mining activities \citep{tarazona2020monitoring}. Combining spectral distance analysis with NDVI may therefore improve the detection of both direct vegetation loss and progressive ecological degradation.
 
 
 \section{Sentinel-2 Imagery and Environmental Applications}
@@ -303,7 +303,7 @@ Sentinel-2 provides imagery across multiple spectral bands including visible, ne
 
 The satellite’s 10 m spatial resolution enables relatively detailed mapping of vegetation condition and surface disturbance. Its five-day revisit frequency also supports multi-temporal monitoring of environmental change.
 
-Sentinel-2 imagery has been widely applied in studies of deforestation, agricultural monitoring, wildfire assessment, wetland mapping, and mining-induced environmental degradation \citep{forkuor2012comparison}. In tropical regions, Sentinel-2 imagery has proven especially useful for identifying vegetation disturbance associated with artisanal and small-scale mining. In tropical regions, Sentinel-2 imagery has proven especially useful for identifying vegetation disturbance associated with artisanal and small-scale mining. For example, Gallwey et al. \citep{gallwey2020sentinel} developed a Sentinel-2-based deep learning approach for detecting artisanal mining activities in Ghana and demonstrated the capability of Sentinel-2 imagery for monitoring mining-related deforestation and landscape disturbance.
+Sentinel-2 imagery has been widely applied in studies of deforestation, agricultural monitoring, wildfire assessment, wetland mapping, and mining-induced environmental degradation \citep{forkuor2012comparison}. In tropical regions, Sentinel-2 imagery has proven especially useful for identifying vegetation disturbance associated with artisanal and small-scale mining. For example, Gallwey et al. \citep{gallwey2020sentinel} developed a Sentinel-2-based deep learning approach for detecting artisanal mining activities in Ghana and demonstrated the capability of Sentinel-2 imagery for monitoring mining-related deforestation and landscape disturbance.
 
 The availability of free, high-resolution imagery makes Sentinel-2 particularly valuable in developing countries where access to commercial satellite datasets may be limited.
 
@@ -515,10 +515,9 @@ The NDVI approach has been widely applied in vegetation monitoring and environme
 
 \section{NDVI-Based Classification and Change Detection}
 
-A rule-based classification procedure was developed to distinguish major land-cover types within the Pra River Basin. The classification was based on NDVI threshold values, which were defined using typical vegetation characteristics in tropical environments and refined through visual comparison with true-colour and false-colour composite images.
+A rule-based classification procedure was developed to distinguish major land-cover types within the Pra River Basin. The classification was based on NDVI threshold values derived from commonly reported vegetation characteristics in tropical environments and iteratively refined through visual comparison with Sentinel-2 true-colour and false-colour composite images. Threshold values were selected to maximize the separation between healthy vegetation, disturbed vegetation, bare soil, and water bodies.
 
 The classification scheme is summarized in Table~\ref{tab:ndvi_classes}.
-The threshold values were based on commonly reported NDVI ranges for tropical vegetation and non-vegetated surfaces and were refined through visual interpretation of the Sentinel-2 true-colour and false-colour composites.
 
 \begin{table}[H]
 \centering
@@ -539,17 +538,17 @@ Class & NDVI Range / Condition & Interpretation \\
 
 \end{table}
 
-Mining-related disturbance was identified using a change-based NDVI approach. Pixels that exhibited high NDVI values in 2018 (NDVI > 0.45), indicating healthy vegetation, and low NDVI values in 2022 (NDVI < 0.30), indicating vegetation removal or severe disturbance, were classified as areas of likely mining-related vegetation loss.
 
-This classification represents a change-detection indicator derived from NDVI differences between 2018 and 2022, rather than a direct land-cover class. It is based on the assumption that substantial vegetation loss within the study area is strongly associated with mining-related land disturbance. This approach also improves discrimination between true vegetation loss and naturally occurring bare surfaces or other stable non-vegetated land-cover types.
+Mining-related disturbance was identified using a change-based NDVI approach. Pixels exhibiting high NDVI values in 2018 (NDVI $>$ 0.45), representing healthy vegetation, and low NDVI values in 2022 (NDVI $<$ 0.30), indicating vegetation removal or severe disturbance, were classified as areas of likely mining-related vegetation loss.
 
+This classification represents a change-detection indicator derived from NDVI differences between 2018 and 2022 rather than a direct land-cover class. The approach is based on the assumption that substantial vegetation loss within the study area is likely associated with mining-related land disturbance. By considering changes in vegetation condition over time, the method helps distinguish areas of recent vegetation loss from stable non-vegetated surfaces and other naturally occurring bare land-cover types. Similar NDVI-based approaches have been applied in studies of mining-affected landscapes in Ghana \citep{barenblitt2021ghana}.
 
 
 \section{Spectral Distance Analysis}
 
 Although NDVI is effective for identifying major differences between vegetated and non-vegetated surfaces, it may not detect more subtle changes in forest condition. For this reason, spectral distance analysis was applied to complement the NDVI-based classification.
 
-The analysis used four Sentinel-2 spectral bands (blue, green, red, and near-infrared), which were combined into a multi-band spectral stack for each year. To reduce computational demand, the spectral data were aggregated from 10 m to 100 m spatial resolution.
+The analysis used four Sentinel-2 spectral bands (blue, green, red, and near-infrared), which were combined into a multi-band spectral stack for each year. To reduce computational demand, the spectral data were aggregated from 10 m to 100 m spatial resolution. This aggregation reduces spatial detail and may smooth small-scale mining features; however, it was necessary for computational feasibility given the study area extent.
 
 Spectral centroids representing dominant land-cover classes were identified from the 2018 dataset and used as reference signatures for subsequent years.
 
@@ -591,14 +590,15 @@ Fuzzy membership values were then calculated for each pixel to determine the deg
 This approach allows for the detection of gradual transitions between land-cover types and provides a more detailed assessment of mining-induced forest degradation.
 
 
-
 \section{Temporal Analysis}
 
 Changes in vegetation condition and forest degradation were assessed by comparing NDVI values, land-cover classifications, and spectral distance results across the three time periods (2018, 2020, and 2022).
 
 This temporal comparison enabled the identification of trends in vegetation loss, forest degradation, and mining-related disturbance within the study area \citep{lu2004change,singh1989review}.
 
+\section{Methodological Limitations}
 
+This study does not include independent validation data. No field surveys or higher-resolution reference imagery were available to assess classification accuracy. Consequently, the land-cover and change-detection results presented in Chapter 5 represent relative patterns rather than validated measurements. Uncertainty in NDVI threshold selection, spectral centroid identification, and cloud masking may affect the results. These limitations are addressed further in Section 6.6.
 
 \chapter{Results}
 
@@ -612,7 +612,7 @@ In 2018, most parts of the basin exhibited relatively high NDVI values, indicati
 
 By 2020, localized areas of lower NDVI had begun to appear, particularly within the central portion of the basin and in areas associated with mining activity. These patterns indicate the early stages of vegetation loss within the study area.
 
-The 2022 NDVI map shows a much larger extent of reduced NDVI values. Areas of low NDVI became more widespread across the basin, particularly within the central degraded zone and surrounding landscapes. Several areas that previously exhibited high NDVI in 2018 had transitioned to values characteristic of disturbed vegetation, bare soil, or or mining-related surfaces.
+The 2022 NDVI map shows a much larger extent of reduced NDVI values. Areas of low NDVI became more widespread across the basin, particularly within the central degraded zone and surrounding landscapes. Several areas that previously exhibited high NDVI in 2018 had transitioned to values characteristic of disturbed vegetation, bare soil, or mining-related surfaces.
 
 The largest change in vegetation condition and vegetation loss occurred between 2020 and 2022, as shown in Figure~\ref{fig:ndvi_timeseries}.
 
@@ -697,7 +697,7 @@ The spatial distribution of mining disturbance is presented in Figure~\ref{fig:m
 
 The spectral distance analysis shows that the spectral properties of the landscape became progressively more similar to the mining centroid between 2018 and 2022. The change in mining disturbance spectral condition is shown in Figure~\ref{fig:mining_spectral}.
 
-In 2018, most pixels exhibited relatively large distances from the mining centroid, indicating that mining disturbance surfaces occupied only a limited proportion of the study area. By 2020, the distribution shifted slightly toward lower distances, suggesting an increase in mining disturbance-related surfaces. The strongest shift occurred in 2022, when a larger proportion of pixels exhibited low spectral distance to the mining centroid. This indicates that mining disturbance expanded substantially during the study period.
+In 2018, most pixels exhibited relatively large distances from the mining centroid, indicating that mining disturbance surfaces occupied only a limited proportion of the study area. By 2020, the distribution shifted slightly toward lower distances, suggesting an increase in mining disturbance-related surfaces. The strongest shift occurred in 2022, when a larger proportion of pixels exhibited low spectral distance to the mining centroid. This suggests an increase in mining-related spectral characteristics across the landscape and is consistent with the expansion of mining disturbance during the study period.
 
 The density distribution shown in Figure~\ref{fig:mining_spectral} demonstrates this progressive temporal shift toward lower spectral distances, indicating increasing similarity of landscape conditions to the mining reference signature over time.
 
@@ -723,7 +723,7 @@ The results demonstrate that vegetation condition declined substantially between
 
 Mining disturbance expanded considerably during the study period and was concentrated within specific mining-influenced areas of the basin. At the same time, spectral distance analysis showed that remaining forest areas became progressively less similar to the 2018 healthy forest reference condition.
 
-These findings indicate that mining disturbance contributed not only to direct vegetation removal but also to broader forest degradation across the surrounding landscape. The combined use of NDVI and spectral distance analysis therefore provided complementary evidence of both land-cover change and gradual ecological deterioration within the study area.
+These findings indicate a spatial association between mining disturbance, vegetation decline, and broader patterns of forest degradation across the surrounding landscape. The combined use of NDVI and spectral distance analysis therefore provided complementary evidence of both land-cover change and gradual ecological deterioration within the study area.
 
 \FloatBarrier
 
@@ -749,7 +749,9 @@ These findings support previous studies that identified mining as a major driver
 
 The spatial distribution of mining disturbance features showed that mining-related features were strongly clustered within several mining-influenced zones across the basin. This clustering pattern demonstrates the close relationship between mining-related land disturbance and riverine environments within the basin.
 
-The mapped mining disturbance areas revealed that many sites were located within or adjacent to previously vegetated areas. Areas surrounding these clusters also exhibited lower NDVI values and greater spectral divergence from the healthy forest reference condition. This indicates that the environmental effects of mining disturbance extend beyond the immediate excavation sites.
+The mapped mining disturbance areas revealed that many sites were located within or adjacent to previously vegetated areas. Although vegetation loss within the Pra River Basin may also be influenced by agricultural expansion, settlement development, and other land-use changes, mining-related disturbance was considered the most likely driver of the observed degradation patterns. This interpretation is supported by the known concentration of artisanal and small-scale mining activities within the basin, the spatial clustering of detected disturbance zones within mining-influenced landscapes, and the close correspondence between mining disturbance areas, bare soil surfaces, and vegetation decline identified through NDVI change detection.
+
+Consequently, while the analysis cannot attribute all observed vegetation loss exclusively to mining activities, the spatial evidence suggests that mining-related land disturbance represents a major contributor to the observed patterns of forest degradation. Areas surrounding these clusters also exhibited lower NDVI values and greater spectral divergence from the healthy forest reference condition. This indicates that the environmental effects of mining disturbance extend beyond the immediate excavation sites.
 
 The concentration of disturbed vegetation around mining disturbance areas suggests that mining is associated not only with direct vegetation removal but also with broader ecological degradation. Mining activities often expose surrounding vegetation to sediment deposition, soil instability, hydrological disruption, and increased human disturbance \citep{hilson2002environmental,sonter2017mining}. These processes may reduce vegetation health even where forest remains partially intact and may accelerate long-term ecological deterioration within tropical forest systems \citep{tarazona2020monitoring}.
 
@@ -761,7 +763,7 @@ This finding agrees with previous research indicating that mining frequently pro
 
 The spectral distance analysis provided additional insight into the condition of forest ecosystems within the Pra River Basin. While NDVI identified broad patterns of vegetation loss, spectral distance analysis revealed more subtle forms of degradation that may not be visible through NDVI alone \citep{richards2013remote,pettorelli2011ndvi_limits}.
 
-The results showed that the spectral properties of the landscape became progressively less similar to the 2018 forest reference condition over time. Forest spectral distance increased substantially between 2018 and 2022, indicating growing divergence from healthy vegetation signatures.
+The density distributions indicated that the spectral properties of the landscape became progressively less similar to the 2018 forest reference condition over time. Forest spectral distances exhibited a clear temporal shift toward larger values between 2018 and 2022, indicating growing divergence from healthy vegetation signatures.
 
 This increase in spectral distance likely reflects several forms of ecological disturbance, including:
 
@@ -803,7 +805,7 @@ The study therefore highlights the need for stronger environmental regulation an
 
 Despite the usefulness of the methodology, several limitations should be acknowledged.
 
-First, the study relied entirely on satellite-based analysis and did not include field validation. Consequently, the classification results represent relative patterns of degradation rather than direct ecological measurements, and classification uncertainty may still affect interpretation of land-cover transitions \citep{foody2002status}.
+First, the study relied entirely on satellite-based analysis and did not include field validation. Consequently, the classification results represent relative patterns of degradation rather than direct ecological measurements, and classification uncertainty may still affect interpretation of land-cover transitions \citep{foody2002status}. Future studies should incorporate field observations or independent validation datasets to assess classification accuracy and improve confidence in the identification of mining disturbance and vegetation degradation classes.
 
 Second, NDVI is sensitive to environmental conditions such as soil moisture, atmospheric variation, and seasonal differences, which may influence vegetation estimates \citep{huete2002overview,pettorelli2005ndvi}.
 
