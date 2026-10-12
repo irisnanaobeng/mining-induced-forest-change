@@ -1,31 +1,13 @@
-# Mining-Induced Forest Degradation in Ghana’s Pra River Basin
-# Multi-Temporal Remote Sensing Analysis
+# =============================================================================
+# Mining-Induced Forest Degradation in Ghana's Pra River Basin
+# A Multi-Temporal Remote Sensing Analysis
 # Author: Iris Nana Obeng
 # Date: 2026-05-10
+# =============================================================================
 
-# ============================================================
-# 1. SETUP
-# ============================================================
-
-# Consistent color palette for all plots
-palette <- list(
-  mining = "#FF0000",
-  healthy_forest = "#1B7837",
-  disturbed_forest = "#FFC125",
-  bare_soil = "#C7A76C",
-  water_bodies = "#4F94CD",
-  no_change = "#C1CDC1",
-  decrease = "#B2182B",
-  increase = "#008B45",
-  africa_fill = "#F4A460",
-  study_area = "#B04A65",
-  ghana_bg = "#FFE4B5"
-)
-
-# Create output directory
-if (!dir.exists("maps")) dir.create("maps")
-
-# Load libraries
+# -----------------------------------------------------------------------------
+# 0. LIBRARIES
+# -----------------------------------------------------------------------------
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(ggspatial)
@@ -40,159 +22,75 @@ library(viridis)
 library(MASS)
 library(grid)
 
+# =============================================================================
+# 1. INTRODUCTION
+# =============================================================================
+# The study focuses on the Pra River Basin in southern Ghana. It employs a
+# multi-temporal approach combining NDVI-based classification with spectral
+# distance metrics to assess mining-induced forest degradation using Sentinel-2
+# imagery from 2018, 2020, and 2022.
 
-# ============================================================
+# =============================================================================
 # 2. STUDY AREA MAP
-# ============================================================
+# =============================================================================
+# (Study area map is pre-generated and saved as maps/study-area-map-1.png)
 
-# Ghana and Africa boundary data
-ghana <- ne_states(country = "Ghana", returnclass = "sf")
-africa <- ne_countries(scale = "medium", continent = "Africa", returnclass = "sf")
+# =============================================================================
+# 3. DATA AND PREPROCESSING
+# =============================================================================
 
-# Pra River Basin approximate bounding box
-pra_bbox <- st_bbox(
-  c(xmin = -1.5, xmax = -0.5,
-    ymin = 5.5, ymax = 6.5),
-  crs = st_crs(4326)
-)
-pra_basin <- st_as_sfc(pra_bbox)
+# -----------------------------------------------------------------------------
+# 3.1 Data Acquisition
+# -----------------------------------------------------------------------------
+# Sentinel-2 imagery for the Pra River Basin was acquired from the Copernicus
+# Open Access Hub. Images selected based on cloud cover (<10%) and seasonal
+# consistency (dry season).
 
-# Major cities
-cities <- data.frame(
-  city = c("Accra", "Kumasi", "Cape Coast", "Takoradi"),
-  lon = c(-0.19, -1.62, -1.28, -1.76),
-  lat = c(5.60, 6.69, 5.13, 4.90)
-)
+# -----------------------------------------------------------------------------
+# 3.2 Image Preprocessing
+# -----------------------------------------------------------------------------
+# Bands reprojected to a common CRS, spatially aligned, and clipped to the
+# Pra River Basin boundary. Cloud-contaminated pixels excluded where necessary.
 
-ghana_fill <- "#FFE4B5"
-basin_fill <- "#B04A65"
-basin_outline <- "#7A0019"
-africa_fill <- "#F4A460"
+# -----------------------------------------------------------------------------
+# 3.3 Sentinel-2 Bands (2018, 2020, 2022)
+# -----------------------------------------------------------------------------
 
-# Inset map
-inset_map <- ggplot() +
-  geom_sf(data = africa, fill = africa_fill, color = "grey70", linewidth = 0.2) +
-  geom_sf(data = ghana, fill = basin_outline, color = "black", linewidth = 0.25) +
-  coord_sf(xlim = c(-20, 60), ylim = c(-40, 40), expand = FALSE) +
-  theme_void() +
-  theme(
-    panel.background = element_rect(fill = "white", color = "black", linewidth = 0.6),
-    plot.margin = margin(3, 3, 3, 3)
-  )
-
-# Main Ghana map
-main_map <- ggplot() +
-  geom_sf(data = ghana, fill = ghana_fill, color = "grey65", linewidth = 0.35) +
-  geom_sf(
-    data = pra_basin,
-    fill = basin_fill,
-    alpha = 0.65,
-    color = basin_outline,
-    linewidth = 0.9
-  ) +
-  geom_point(
-    data = cities,
-    aes(x = lon, y = lat),
-    shape = 21,
-    size = 3.2,
-    fill = "white",
-    color = "#7A0019",
-    stroke = 0.8
-  ) +
-  geom_text(
-    data = cities,
-    aes(x = lon, y = lat, label = city),
-    nudge_y = 0.18,
-    size = 3.6
-  ) +
-  annotate(
-    "text",
-    x = -1.05, y = 6.35,
-    label = "Pra River Basin",
-    size = 5,
-    fontface = "bold",
-    color = basin_outline
-  ) +
-  annotation_scale(location = "bl", width_hint = 0.28) +
-  annotation_north_arrow(
-    location = "tr",
-    which_north = "true",
-    style = north_arrow_fancy_orienteering
-  ) +
-  labs(
-    title = "Study Area: Pra River Basin, Ghana",
-    subtitle = "Context map for mining impact analysis",
-    x = "Longitude",
-    y = "Latitude"
-  ) +
-  coord_sf(xlim = c(-3.5, 1.5), ylim = c(4.5, 11.5), expand = FALSE) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
-    plot.subtitle = element_text(hjust = 0.5, size = 12, margin = margin(b = 8)),
-    panel.grid = element_line(color = "grey88", linewidth = 0.4),
-    axis.title = element_text(size = 12),
-    axis.text = element_text(size = 10),
-    plot.background = element_rect(fill = "white", color = NA),
-    panel.background = element_rect(fill = "white", color = NA)
-  )
-
-final_map <- main_map +
-  inset_element(inset_map, left = 0.68, bottom = 0.64, right = 0.98, top = 0.98)
-
-print(final_map)
-
-ggsave(
-  "maps/pra_river_basin_ghana_location.png",
-  final_map,
-  width = 16,
-  height = 10,
-  dpi = 300,
-  bg = "white"
-)
-
-
-# ============================================================
-# 3. LOAD SENTINEL-2 BANDS
-# ============================================================
-
-# 2018 bands
+# --- 2018 Bands ---
 blue_2018  <- rast("./S2A_MSIL2A_20180112T102401_N0500_R065_T30NXN_20230717T153523.SAFE/T30NXN_20180112T102401_B02_10m.jp2")
 green_2018 <- rast("./S2A_MSIL2A_20180112T102401_N0500_R065_T30NXN_20230717T153523.SAFE/T30NXN_20180112T102401_B03_10m.jp2")
 red_2018   <- rast("./S2A_MSIL2A_20180112T102401_N0500_R065_T30NXN_20230717T153523.SAFE/T30NXN_20180112T102401_B04_10m.jp2")
 nir_2018   <- rast("./S2A_MSIL2A_20180112T102401_N0500_R065_T30NXN_20230717T153523.SAFE/T30NXN_20180112T102401_B08_10m.jp2")
 
-# 2020 bands
+# --- 2020 Bands ---
 blue_2020  <- rast("./S2A_MSIL2A_20200102T102421_N0500_R065_T30NXN_20230425T023320.SAFE/T30NXN_20200102T102421_B02_10m.jp2")
 green_2020 <- rast("./S2A_MSIL2A_20200102T102421_N0500_R065_T30NXN_20230425T023320.SAFE/T30NXN_20200102T102421_B03_10m.jp2")
 red_2020   <- rast("./S2A_MSIL2A_20200102T102421_N0500_R065_T30NXN_20230425T023320.SAFE/T30NXN_20200102T102421_B04_10m.jp2")
 nir_2020   <- rast("./S2A_MSIL2A_20200102T102421_N0500_R065_T30NXN_20230425T023320.SAFE/T30NXN_20200102T102421_B08_10m.jp2")
 
-# 2022 bands
+# --- 2022 Bands ---
 blue_2022  <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXN_20240506T042828.SAFE/T30NXN_20220126T102209_B02_10m.jp2")
 green_2022 <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXN_20240506T042828.SAFE/T30NXN_20220126T102209_B03_10m.jp2")
 red_2022   <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXN_20240506T042828.SAFE/T30NXN_20220126T102209_B04_10m.jp2")
 nir_2022   <- rast("./S2B_MSIL2A_20220126T102209_N0510_R065_T30NXN_20240506T042828.SAFE/T30NXN_20220126T102209_B08_10m.jp2")
 
+# -----------------------------------------------------------------------------
+# 3.4 Creating RGB Composites
+# -----------------------------------------------------------------------------
 
-# ============================================================
-# 4. CREATE RGB COMPOSITES
-# ============================================================
-
-# True Color composites: Red-Green-Blue
+# True Color composites (Red-Green-Blue)
 tc_2018 <- c(red_2018, green_2018, blue_2018)
 tc_2020 <- c(red_2020, green_2020, blue_2020)
 tc_2022 <- c(red_2022, green_2022, blue_2022)
 
-# False Color composites: NIR-Red-Green
+# False Color composites (NIR-Red-Green)
 fc_2018 <- c(nir_2018, red_2018, green_2018)
 fc_2020 <- c(nir_2020, red_2020, green_2020)
 fc_2022 <- c(nir_2022, red_2022, green_2022)
 
-
-# ============================================================
-# 5. CUSTOM FUNCTIONS
-# ============================================================
+# -----------------------------------------------------------------------------
+# 3.5 Custom Visualization Functions
+# -----------------------------------------------------------------------------
 
 im.ggplotRGB <- function(img, r = 1, g = 2, b = 3,
                          stretch = TRUE, downsample = 6,
@@ -216,17 +114,13 @@ im.ggplotRGB <- function(img, r = 1, g = 2, b = 3,
     coord_equal() +
     ggtitle(title) +
     theme_minimal() +
-    theme(
-      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-      panel.grid = element_blank()
-    )
+    theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+          panel.grid = element_blank())
   
   if (!show_axes) {
-    p <- p + theme(
-      axis.title = element_blank(),
-      axis.text = element_blank(),
-      axis.ticks = element_blank()
-    )
+    p <- p + theme(axis.title = element_blank(),
+                   axis.text = element_blank(),
+                   axis.ticks = element_blank())
   }
   
   return(p)
@@ -234,8 +128,8 @@ im.ggplotRGB <- function(img, r = 1, g = 2, b = 3,
 
 ndvi_change_class <- function(ndvi_diff) {
   class_r <- ndvi_diff * 0
-  class_r[ndvi_diff > 0.1]  <- 1
-  class_r[ndvi_diff < -0.1] <- 2
+  class_r[ndvi_diff > 0.1]  <- 1  # Vegetation increase
+  class_r[ndvi_diff < -0.1] <- 2  # Vegetation decrease
   return(class_r)
 }
 
@@ -243,7 +137,6 @@ plot_singleband_gg <- function(r, downsample = 8, title = "") {
   r_small <- terra::aggregate(r, fact = downsample)
   df <- as.data.frame(r_small, xy = TRUE, na.rm = TRUE)
   names(df)[3] <- "val"
-  
   ggplot(df, aes(x = x, y = y, fill = val)) +
     geom_raster() +
     scale_fill_viridis_c(option = "D", na.value = "transparent") +
@@ -262,59 +155,23 @@ prepare_raster_df <- function(raster_layer, downsample_factor = 12) {
   return(df)
 }
 
+# -----------------------------------------------------------------------------
+# 3.6 True Color (RGB) Visualization
+# -----------------------------------------------------------------------------
+# (True color composite images are pre-generated as maps/true-color-1.png)
 
-# ============================================================
-# 6. TRUE COLOR AND FALSE COLOR VISUALIZATION
-# ============================================================
+# -----------------------------------------------------------------------------
+# 3.7 False Color Visualization
+# -----------------------------------------------------------------------------
+# (False color composite images are pre-generated as maps/false-color-1.png)
 
-p_tc_2018 <- im.ggplotRGB(tc_2018, title = "True Colour 2018")
-p_tc_2020 <- im.ggplotRGB(tc_2020, title = "True Colour 2020")
-p_tc_2022 <- im.ggplotRGB(tc_2022, title = "True Colour 2022")
+# =============================================================================
+# 4. METHODS
+# =============================================================================
 
-combined_true_color <- (p_tc_2018 | p_tc_2020 | p_tc_2022) +
-  plot_annotation(
-    title = "True Colour Composites Pra River Basin Forest (2018, 2020, 2022)",
-    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
-  ) &
-  theme(plot.margin = margin(5, 5, 5, 5))
-
-print(combined_true_color)
-
-ggsave(
-  "maps/true_color_comparison.png",
-  combined_true_color,
-  width = 18,
-  height = 6,
-  dpi = 300,
-  bg = "white"
-)
-
-p_fc_2018 <- im.ggplotRGB(fc_2018, title = "False Colour 2018")
-p_fc_2020 <- im.ggplotRGB(fc_2020, title = "False Colour 2020")
-p_fc_2022 <- im.ggplotRGB(fc_2022, title = "False Colour 2022")
-
-combined_false_color <- (p_fc_2018 | p_fc_2020 | p_fc_2022) +
-  plot_annotation(
-    title = "False Colour Composites Pra River Basin Forest (2018, 2020, 2022)",
-    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
-  ) &
-  theme(plot.margin = margin(5, 5, 5, 5))
-
-print(combined_false_color)
-
-ggsave(
-  "maps/false_color_comparison.png",
-  combined_false_color,
-  width = 18,
-  height = 6,
-  dpi = 300,
-  bg = "white"
-)
-
-
-# ============================================================
-# 7. NDVI CALCULATION
-# ============================================================
+# -----------------------------------------------------------------------------
+# 4.1 NDVI Calculation
+# -----------------------------------------------------------------------------
 
 ndvi_calc <- function(nir, red) {
   nd <- (nir - red) / (nir + red)
@@ -326,10 +183,15 @@ ndvi_2018 <- ndvi_calc(nir_2018, red_2018)
 ndvi_2020 <- ndvi_calc(nir_2020, red_2020)
 ndvi_2022 <- ndvi_calc(nir_2022, red_2022)
 
-
-# ============================================================
-# 8. NDVI-BASED LAND COVER CLASSIFICATION
-# ============================================================
+# -----------------------------------------------------------------------------
+# 4.2 NDVI-Based Land Cover Classification Function
+# -----------------------------------------------------------------------------
+# Land cover classes derived from NDVI using rule-based thresholds:
+#   Water: NDVI < 0.05
+#   Healthy vegetation: NDVI >= 0.40
+#   Disturbed vegetation: 0.25 <= NDVI < 0.40
+#   Bare soil: 0.05 <= NDVI < 0.25
+#   Mining: NDVI_current < 0.30 AND NDVI_previous > 0.45
 
 im.classify <- function(ndvi_current, ndvi_previous = NULL,
                         water_threshold = 0.05,
@@ -338,15 +200,26 @@ im.classify <- function(ndvi_current, ndvi_previous = NULL,
                         disturbed_low = 0.25,
                         disturbed_high = 0.40) {
   
+  # Initialize raster
   class_raster <- ndvi_current * 0
   values(class_raster) <- NA
   
+  # -------------------------------
+  # 1. WATER
+  # -------------------------------
   water_mask <- ndvi_current < water_threshold
   class_raster[water_mask] <- 1
   cat("Water pixels:", global(water_mask, "sum", na.rm = TRUE)[1, 1], "\n")
   
+  # -------------------------------
+  # 2. MINING
+  # -------------------------------
   if (!is.null(ndvi_previous)) {
-    mining_mask <- (ndvi_current < mining_threshold & ndvi_previous > 0.45) & (!water_mask)
+    mining_mask <- (
+      ndvi_current < mining_threshold &
+        ndvi_previous > 0.45
+    ) & (!water_mask)
+    
     class_raster[mining_mask] <- 2
     cat("Active mining pixels:", global(mining_mask, "sum", na.rm = TRUE)[1, 1], "\n")
   } else {
@@ -354,20 +227,41 @@ im.classify <- function(ndvi_current, ndvi_previous = NULL,
     mining_mask[] <- FALSE
   }
   
-  healthy_mask <- (ndvi_current >= healthy_threshold) & (!water_mask) & (!mining_mask)
+  # -------------------------------
+  # 3. HEALTHY VEGETATION
+  # -------------------------------
+  healthy_mask <- (
+    ndvi_current >= healthy_threshold
+  ) & (!water_mask) & (!mining_mask)
+  
   class_raster[healthy_mask] <- 3
   cat("Healthy vegetation pixels:", global(healthy_mask, "sum", na.rm = TRUE)[1, 1], "\n")
   
-  disturbed_mask <- (ndvi_current >= disturbed_low & ndvi_current < disturbed_high) &
-    (!water_mask) & (!mining_mask) & (!healthy_mask)
+  # -------------------------------
+  # 4. DISTURBED VEGETATION
+  # -------------------------------
+  disturbed_mask <- (
+    ndvi_current >= disturbed_low &
+      ndvi_current < disturbed_high
+  ) & (!water_mask) & (!mining_mask) & (!healthy_mask)
+  
   class_raster[disturbed_mask] <- 4
   cat("Disturbed vegetation pixels:", global(disturbed_mask, "sum", na.rm = TRUE)[1, 1], "\n")
   
-  bare_mask <- (ndvi_current >= water_threshold & ndvi_current < disturbed_low) &
-    (!water_mask) & (!mining_mask) & (!healthy_mask) & (!disturbed_mask)
+  # -------------------------------
+  # 5. BARE SOIL
+  # -------------------------------
+  bare_mask <- (
+    ndvi_current >= water_threshold &
+      ndvi_current < disturbed_low
+  ) & (!water_mask) & (!mining_mask) & (!healthy_mask) & (!disturbed_mask)
+  
   class_raster[bare_mask] <- 5
   cat("Bare soil pixels:", global(bare_mask, "sum", na.rm = TRUE)[1, 1], "\n")
   
+  # -------------------------------
+  # SUMMARY
+  # -------------------------------
   unclassified <- is.na(values(class_raster))
   cat("Unclassified pixels:", sum(unclassified, na.rm = TRUE), "\n")
   
@@ -376,15 +270,20 @@ im.classify <- function(ndvi_current, ndvi_previous = NULL,
 }
 
 cat(">>> RUNNING CLASSIFICATION <<< \n")
-vegetation_classes <- im.classify(ndvi_current = ndvi_2022, ndvi_previous = ndvi_2018)
+
+vegetation_classes <- im.classify(
+  ndvi_current = ndvi_2022,
+  ndvi_previous = ndvi_2018
+)
+
 cat(">>> CLASSIFICATION COMPLETE <<< \n")
 print(vegetation_classes)
 
+# -----------------------------------------------------------------------------
+# 4.3 Spectral Distance Analysis
+# -----------------------------------------------------------------------------
 
-# ============================================================
-# 9. SPECTRAL STACKS
-# ============================================================
-
+# Creating spectral stacks
 spec_stack_2018 <- c(blue_2018, green_2018, red_2018, nir_2018)
 names(spec_stack_2018) <- c("Blue", "Green", "Red", "NIR")
 
@@ -394,16 +293,16 @@ names(spec_stack_2020) <- c("Blue", "Green", "Red", "NIR")
 spec_stack_2022 <- c(blue_2022, green_2022, red_2022, nir_2022)
 names(spec_stack_2022) <- c("Blue", "Green", "Red", "NIR")
 
+# Spatial aggregation
 spec_small_2018 <- terra::aggregate(spec_stack_2018, fact = 10)
 spec_small_2020 <- terra::aggregate(spec_stack_2020, fact = 10)
 spec_small_2022 <- terra::aggregate(spec_stack_2022, fact = 10)
 
 print(sprintf("Resolution reduced to: %.1f meters", terra::res(spec_small_2018)[1]))
 
-
-# ============================================================
-# 10. FUZZY CLASSIFICATION FUNCTIONS
-# ============================================================
+# -----------------------------------------------------------------------------
+# 4.4 Fuzzy Classification Functions
+# -----------------------------------------------------------------------------
 
 im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, m = 2, do_plot = FALSE) {
   
@@ -415,6 +314,7 @@ im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, m = 2, do_plot = 
   
   if (nrow(vals) == 0) stop("No valid pixels found")
   
+  # Standardize to 0-255 scale
   for (i in 1:ncol(vals)) {
     min_val <- min(vals[, i], na.rm = TRUE)
     max_val <- max(vals[, i], na.rm = TRUE)
@@ -425,21 +325,25 @@ im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, m = 2, do_plot = 
     }
   }
   
+  # K-means clustering
   set.seed(seed)
   km_result <- kmeans(vals, centers = num_clusters)
   centers <- km_result$centers
   
+  # Calculate distances
   dist_matrix <- matrix(NA, nrow(vals), num_clusters)
   for (k in 1:num_clusters) {
     diff_matrix <- sweep(vals, 2, centers[k, ], "-")
     dist_matrix[, k] <- sqrt(rowSums(diff_matrix^2))
   }
   
+  # Fuzzy membership
   exponent <- 2 / (m - 1)
   membership_matrix <- matrix(NA, nrow(vals), num_clusters)
   
   for (i in 1:nrow(dist_matrix)) {
     distances <- dist_matrix[i, ]
+    
     if (any(distances == 0)) {
       membership <- rep(0, num_clusters)
       exact_matches <- which(distances == 0)
@@ -451,6 +355,7 @@ im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, m = 2, do_plot = 
     membership_matrix[i, ] <- membership
   }
   
+  # Create output rasters
   template_raster <- input_image[[1]]
   distance_rasters <- list()
   membership_rasters <- list()
@@ -484,6 +389,7 @@ im.fuzzy <- function(input_image, num_clusters = 3, seed = 42, m = 2, do_plot = 
   ))
 }
 
+# Fixed-centroid version for temporal analysis
 im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
   
   vals <- terra::as.matrix(input_image)
@@ -492,6 +398,7 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
   
   if (nrow(vals) == 0) stop("No valid pixels found")
   
+  # Standardize
   for (i in 1:ncol(vals)) {
     min_val <- min(vals[, i], na.rm = TRUE)
     max_val <- max(vals[, i], na.rm = TRUE)
@@ -505,17 +412,20 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
   centers <- fixed_centers
   num_clusters <- nrow(centers)
   
+  # Calculate distances to fixed centroids
   dist_matrix <- matrix(NA, nrow(vals), num_clusters)
   for (k in 1:num_clusters) {
     diff_matrix <- sweep(vals, 2, centers[k, ], "-")
     dist_matrix[, k] <- sqrt(rowSums(diff_matrix^2))
   }
   
+  # Fuzzy membership calculation
   exponent <- 2 / (m - 1)
   membership_matrix <- matrix(NA, nrow(vals), num_clusters)
   
   for (i in 1:nrow(dist_matrix)) {
     distances <- dist_matrix[i, ]
+    
     if (any(distances == 0)) {
       membership <- rep(0, num_clusters)
       exact_matches <- which(distances == 0)
@@ -524,20 +434,25 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
       ratio_matrix <- outer(distances, distances, "/")
       membership <- 1 / rowSums(ratio_matrix^exponent)
     }
+    
     membership_matrix[i, ] <- membership
   }
   
+  # Create output rasters
   template_raster <- input_image[[1]]
+  
   distance_rasters <- list()
   membership_rasters <- list()
   
   for (k in 1:num_clusters) {
+    # Distance raster
     dist_raster <- template_raster
     dist_values <- rep(NA, terra::ncell(template_raster))
     dist_values[valid_idx] <- dist_matrix[, k]
     terra::values(dist_raster) <- dist_values
     distance_rasters[[k]] <- dist_raster
     
+    # Membership raster
     mem_raster <- template_raster
     mem_values <- rep(NA, terra::ncell(template_raster))
     mem_values[valid_idx] <- membership_matrix[, k]
@@ -545,6 +460,7 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
     membership_rasters[[k]] <- mem_raster
   }
   
+  # Compile outputs
   distance_stack <- terra::rast(distance_rasters)
   names(distance_stack) <- paste0("class_", 1:num_clusters, "_distance")
   
@@ -552,11 +468,9 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
   names(membership_stack) <- paste0("class_", 1:num_clusters, "_membership")
   
   if (do_plot) {
-    terra::plot(
-      membership_stack,
-      main = "Fuzzy Membership Maps (Fixed Centroids)",
-      col = viridis::viridis(100)
-    )
+    terra::plot(membership_stack,
+                main = "Fuzzy Membership Maps (Fixed Centroids)",
+                col = viridis::viridis(100))
   }
   
   return(list(
@@ -570,40 +484,52 @@ im.fuzzy.fixed <- function(input_image, fixed_centers, m = 2, do_plot = FALSE) {
 
 print("Fuzzy classification")
 
-
-# ============================================================
-# 11. FUZZY CLASSIFICATION IMPLEMENTATION
-# ============================================================
+# -----------------------------------------------------------------------------
+# 4.5 Distance Extraction Function
+# -----------------------------------------------------------------------------
 
 extract_distances <- function(fuzzy_result, year_label, class_idx, n_samples) {
   dists <- fuzzy_result$raw_distances[, class_idx]
+  
   if (length(dists) > n_samples) {
     set.seed(42)
     dists <- sample(dists, n_samples)
   }
-  data.frame(Year = year_label, Distance = dists)
+  
+  data.frame(
+    Year = year_label,
+    Distance = dists
+  )
 }
 
+# -----------------------------------------------------------------------------
+# 4.6 Fuzzy Classification Implementation
+# -----------------------------------------------------------------------------
+
+# 2018 centroids (baseline)
 print("Step 1: Computing 2018 baseline centroids...")
 fuzzy_2018 <- im.fuzzy(spec_small_2018, num_clusters = 3, seed = 42, do_plot = FALSE)
 centroids_2018 <- fuzzy_2018$centers
 
+# Saving centroids for reproducibility
 write.csv(centroids_2018, "centroids_2018.csv", row.names = FALSE)
 print("2018 centroids saved to 'centroids_2018.csv'")
 
+# Applying same centroids to 2020 and 2022
 print("Step 2: Applying 2018 centroids to 2020 and 2022...")
 fuzzy_2020 <- im.fuzzy.fixed(spec_small_2020, fixed_centers = centroids_2018, do_plot = FALSE)
 fuzzy_2022 <- im.fuzzy.fixed(spec_small_2022, fixed_centers = centroids_2018, do_plot = FALSE)
 
 print("Temporal analysis complete for all three years")
 
+# -----------------------------------------------------------------------------
+# 4.7 Mining Class Identification
+# -----------------------------------------------------------------------------
 
-# ============================================================
-# 12. MINING AND FOREST CLASS IDENTIFICATION
-# ============================================================
-
+# Identify mining class based on spectral signature
 red_nir_ratio <- centroids_2018[, 3] / centroids_2018[, 4]
 
+# Create centroid_analysis for forest identification
 centroid_analysis <- data.frame(
   Class = 1:3,
   Red = centroids_2018[, 3],
@@ -613,9 +539,13 @@ centroid_analysis <- data.frame(
 centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
   (centroid_analysis$NIR + centroid_analysis$Red)
 
+# Identify mining class (class with highest Red/NIR ratio)
 mining_class <- which.max(red_nir_ratio)
+
+# Identify forest class (class with highest NDVI)
 forest_class <- which.max(centroid_analysis$NDVI)
 
+# Create centroid_df for display
 centroid_df <- data.frame(
   Class = 1:3,
   Blue = round(centroids_2018[, 1], 1),
@@ -626,6 +556,7 @@ centroid_df <- data.frame(
   Interpretation = "Undetermined"
 )
 
+# Assign interpretations consistently
 for (i in 1:3) {
   if (i == mining_class) {
     centroid_df$Interpretation[i] <- "Mining/Bare Soil"
@@ -641,228 +572,84 @@ print(centroid_df)
 print(paste("Mining class is Class", mining_class))
 print(paste("Forest class is Class", forest_class))
 
-write.csv(centroid_df, "centroid_class_interpretation.csv", row.names = FALSE)
+# =============================================================================
+# 5. RESULTS
+# =============================================================================
 
+# -----------------------------------------------------------------------------
+# 5.1 NDVI Time Series Analysis
+# -----------------------------------------------------------------------------
+# (NDVI time series plot pre-generated as maps/ndvi-time-series-1.png)
 
-# ============================================================
-# 13. NDVI TIME SERIES
-# ============================================================
+# -----------------------------------------------------------------------------
+# 5.2 NDVI Change Detection and Bar Chart Distribution
+# -----------------------------------------------------------------------------
+# (NDVI change combined plot pre-generated as maps/ndvi-change-combined-1.png)
 
-p_ndvi_2018 <- plot_singleband_gg(ndvi_2018, title = "NDVI 2018")
-p_ndvi_2020 <- plot_singleband_gg(ndvi_2020, title = "NDVI 2020")
-p_ndvi_2022 <- plot_singleband_gg(ndvi_2022, title = "NDVI 2022")
+# -----------------------------------------------------------------------------
+# 5.3 Land Cover Classification Map
+# -----------------------------------------------------------------------------
 
-combined_ndvi <- (p_ndvi_2018 | p_ndvi_2020 | p_ndvi_2022) +
-  plot_annotation(
-    title = "NDVI Time Series Pra River Basin Forest (2018, 2020, 2022)",
-    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
-  ) &
-  theme(plot.margin = margin(5, 5, 5, 5), legend.position = "right")
+# --- 5.3.1 Vegetation Classification Map ---
 
-print(combined_ndvi)
-
-ggsave(
-  "maps/ndvi_timeseries.png",
-  combined_ndvi,
-  width = 18,
-  height = 8,
-  dpi = 300,
-  bg = "white"
+# Aggregate land cover raster
+class_small <- terra::aggregate(
+  vegetation_classes,
+  fact = 8,
+  fun = modal,
+  na.rm = TRUE
 )
 
+# Convert to dataframe
+df_class <- as.data.frame(class_small, xy = TRUE)
+colnames(df_class) <- c("x", "y", "class")
+df_class <- na.omit(df_class)
 
-# ============================================================
-# 14. NDVI CHANGE DETECTION AND BAR CHART
-# ============================================================
-
-ndvi_diff_18_22 <- ndvi_2022 - ndvi_2018
-
-ndvi_change_18_22_class <- ndvi_change_class(ndvi_diff_18_22)
-ndvi_change_discrete <- terra::aggregate(ndvi_change_18_22_class, fact = 8)
-
-df_change <- as.data.frame(ndvi_change_discrete, xy = TRUE, na.rm = TRUE)
-colnames(df_change) <- c("x", "y", "class")
-
-df_change$class <- factor(
-  df_change$class,
-  levels = c(0, 1, 2),
-  labels = c("No Change", "Vegetation Increase", "Vegetation Decrease")
+df_class$class <- factor(
+  df_class$class,
+  levels = c(1, 2, 3, 4, 5),
+  labels = c(
+    "Water Bodies",
+    "Mining Disturbance",
+    "Healthy Vegetation",
+    "Disturbed Vegetation",
+    "Bare Soil"
+  )
 )
 
-p_ndvi_diff_18_22 <- plot_singleband_gg(ndvi_diff_18_22, title = "NDVI Difference (2022–2018)") +
-  scale_fill_gradient2(
-    low = "#B2182B",
-    mid = "#F2F2F2",
-    high = "#008B45",
-    midpoint = 0,
-    limits = c(-0.6, 0.4),
-    name = expression(Delta * "NDVI")
+class_colors <- c(
+  "Water Bodies" = "#00BFFF",
+  "Healthy Vegetation" = "#004D40",
+  "Disturbed Vegetation" = "#81c784",
+  "Bare Soil" = "#e3d7c5",
+  "Mining Disturbance" = "#ff0000"
+)
+
+# Land cover map
+im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = class)) +
+  geom_raster() +
+  scale_fill_manual(
+    values = class_colors,
+    name = "Land Cover Class"
   ) +
-  labs(x = "Longitude", y = "Latitude") +
-  theme_minimal(base_size = 12) +
+  coord_equal() +
+  labs(
+    title = "Land Cover Classification Map of the Pra River Basin (2022)",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "#000000"),
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
     axis.title = element_text(size = 12),
     axis.text = element_text(size = 10),
-    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid = element_blank(),
     legend.title = element_text(face = "bold"),
     legend.position = "right",
     plot.background = element_rect(fill = "white", color = NA)
   )
 
-ndvi_legend <- ggplot() +
-  annotate(
-    "rect",
-    xmin = 0, xmax = 1,
-    ymin = 0.08, ymax = 0.92,
-    fill = "white",
-    color = "grey65",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = 0.08, y = 0.82,
-    label = "NDVI Change Interpretation",
-    hjust = 0,
-    fontface = "bold",
-    size = 4.2
-  ) +
-  annotate(
-    "rect",
-    xmin = 0.08, xmax = 0.16,
-    ymin = 0.60, ymax = 0.68,
-    fill = "#B2182B",
-    color = "grey40"
-  ) +
-  annotate("text", x = 0.20, y = 0.64, label = "Vegetation decrease", hjust = 0, size = 3.7) +
-  annotate(
-    "rect",
-    xmin = 0.08, xmax = 0.16,
-    ymin = 0.42, ymax = 0.50,
-    fill = "#F2F2F2",
-    color = "grey40"
-  ) +
-  annotate("text", x = 0.20, y = 0.48, label = "Little or no change", hjust = 0, size = 3.7) +
-  annotate(
-    "rect",
-    xmin = 0.08, xmax = 0.16,
-    ymin = 0.24, ymax = 0.32,
-    fill = "#008B45",
-    color = "grey40"
-  ) +
-  annotate("text", x = 0.20, y = 0.28, label = "Vegetation increase", hjust = 0, size = 3.7) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), expand = FALSE) +
-  theme_void()
-
-map_with_legend <- p_ndvi_diff_18_22 | ndvi_legend +
-  plot_layout(widths = c(3.2, 1))
-
-ndvi_change_clean <- df_change[!is.na(df_change$class), ]
-class_counts <- table(ndvi_change_clean$class)
-
-ndvi_change_summary <- data.frame(
-  class = factor(
-    names(class_counts),
-    levels = c("Vegetation Decrease", "No Change", "Vegetation Increase")
-  ),
-  pixel_count = as.numeric(class_counts),
-  percentage = as.numeric(class_counts) / sum(class_counts) * 100
-)
-
-ndvi_change_bar <- ggplot(
-  ndvi_change_summary,
-  aes(x = class, y = percentage, fill = class)
-) +
-  geom_col(width = 0.65) +
-  geom_text(
-    aes(label = paste0(round(percentage, 1), "%")),
-    vjust = -0.4,
-    size = 5,
-    fontface = "bold"
-  ) +
-  scale_fill_manual(
-    values = c(
-      "Vegetation Decrease" = "#B2182B",
-      "No Change" = "#C1CDC1",
-      "Vegetation Increase" = "#008B45"
-    ),
-    guide = "none"
-  ) +
-  scale_y_continuous(
-    labels = percent_format(scale = 1),
-    limits = c(0, 100),
-    breaks = c(0, 25, 50, 75, 100),
-    expand = expansion(mult = c(0, 0.05))
-  ) +
-  labs(
-    title = "NDVI Change Distribution (2018–2022)",
-    x = "NDVI Change Category",
-    y = "Percentage of Study Area (%)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "black"),
-    axis.text.x = element_text(size = 11),
-    axis.title = element_text(size = 12),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.background = element_rect(fill = "white", color = NA)
-  )
-
-combined_ndvi_change <- map_with_legend / ndvi_change_bar +
-  plot_layout(heights = c(1.35, 1)) +
-  plot_annotation(
-    title = "NDVI Change Analysis in the Pra River Basin (2018–2022)",
-    theme = theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18, color = "black"))
-  )
-
-print(combined_ndvi_change)
-
-ggsave(
-  "maps/ndvi_change_map_and_bar_chart.png",
-  combined_ndvi_change,
-  width = 11,
-  height = 12,
-  dpi = 300,
-  bg = "white"
-)
-
-
-# ============================================================
-# 15. LAND COVER CLASSIFICATION MAP
-# ============================================================
-
-class_small <- terra::aggregate(vegetation_classes, fact = 8, fun = modal, na.rm = TRUE)
-
-df_class <- as.data.frame(class_small, xy = TRUE)
-df_class <- na.omit(df_class)
-colnames(df_class) <- c("x", "y", "class")
-
-class_colors <- c(
-  "1" = palette$water_bodies,
-  "2" = palette$mining,
-  "3" = palette$healthy_forest,
-  "4" = palette$disturbed_forest,
-  "5" = palette$bare_soil
-)
-
-im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = factor(class))) +
-  geom_raster() +
-  scale_fill_manual(
-    values = class_colors,
-    name = "Land Cover Class",
-    labels = c(
-      "1" = "Water Bodies",
-      "2" = "Active Mining",
-      "3" = "Healthy Vegetation",
-      "4" = "Disturbed Vegetation",
-      "5" = "Bare Soil"
-    )
-  ) +
-  coord_equal() +
-  labs(title = "Land Cover Classification Showing Mining Areas (2022)")
-
-print(im_class_map)
+im_class_map
 
 ggsave(
   "maps/vegetation_mining_2022.png",
@@ -873,72 +660,26 @@ ggsave(
   bg = "white"
 )
 
+# -----------------------------------------------------------------------------
+# 5.4 Mining Distribution and Influence
+# -----------------------------------------------------------------------------
 
-# ============================================================
-# 16. MINING DISTRIBUTION MAP
-# ============================================================
+# --- 5.4.1 Mining Distribution Map ---
+# (Mining distribution maps pre-generated as maps/mining-distribution-map-2022-1.png
+#  and maps/mining-distribution-map-2022-2.png)
 
-class_small <- terra::aggregate(vegetation_classes, fact = 8, fun = modal, na.rm = TRUE)
-ndvi_small <- terra::aggregate(ndvi_2022, fact = 8)
+# -----------------------------------------------------------------------------
+# 5.5 Spectral Analysis of Mining Areas
+# -----------------------------------------------------------------------------
 
-df_class <- as.data.frame(class_small, xy = TRUE, na.rm = TRUE)
-colnames(df_class) <- c("x", "y", "class")
-
-df_ndvi <- as.data.frame(ndvi_small, xy = TRUE, na.rm = TRUE)
-colnames(df_ndvi) <- c("x", "y", "ndvi")
-
-df_mining_points <- df_class[df_class$class == 2, ]
-
-set.seed(42)
-if (nrow(df_mining_points) > 4000) {
-  df_mining_points <- df_mining_points[sample(nrow(df_mining_points), 4000), ]
-}
-
-p_mining <- ggplot() +
-  geom_raster(data = df_ndvi, aes(x = x, y = y, fill = ndvi)) +
-  scale_fill_viridis_c(option = "D", name = "NDVI") +
-  geom_point(
-    data = df_mining_points,
-    aes(x = x, y = y),
-    color = "firebrick",
-    size = 0.5,
-    alpha = 0.3
-  ) +
-  coord_equal() +
-  labs(
-    title = "Spatial Distribution of Active Mining Areas – Pra River Basin (2022)",
-    subtitle = "Red dots indicate classified active mining pixels",
-    x = "Longitude",
-    y = "Latitude"
-  ) +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5, size = 11),
-    panel.border = element_rect(color = "grey70", fill = NA, linewidth = 0.4)
-  )
-
-print(p_mining)
-
-ggsave(
-  "maps/mining_distribution_dots_2022.png",
-  p_mining,
-  width = 10,
-  height = 8,
-  dpi = 300,
-  bg = "white"
-)
-
-
-# ============================================================
-# 17. SPECTRAL ANALYSIS OF MINING AREAS
-# ============================================================
-
+# Create distance data for mining class
 dist_data <- rbind(
   extract_distances(fuzzy_2018, "2018", mining_class, 5000),
   extract_distances(fuzzy_2020, "2020", mining_class, 5000),
   extract_distances(fuzzy_2022, "2022", mining_class, 5000)
 )
 
+# Density plot
 p_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
   geom_density(alpha = 0.6) +
   scale_fill_manual(values = c("2018" = "#FEE8C8", "2020" = "#FDBB84", "2022" = "#E34A33")) +
@@ -954,9 +695,10 @@ p_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
     plot.subtitle = element_text(hjust = 0.5, size = 11)
   )
 
+# Mining spectral scatter (2022)
 df_mining_scatter <- data.frame(
-  Red = fuzzy_2022$scaled_values[, 3],
-  NIR = fuzzy_2022$scaled_values[, 4],
+  Red      = fuzzy_2022$scaled_values[, 3],
+  NIR      = fuzzy_2022$scaled_values[, 4],
   Distance = fuzzy_2022$raw_distances[, mining_class]
 )
 
@@ -965,26 +707,27 @@ if (nrow(df_mining_scatter) > 5000) {
   df_mining_scatter <- df_mining_scatter[sample(nrow(df_mining_scatter), 5000), ]
 }
 
-p_mining_scatter <- ggplot(df_mining_scatter, aes(x = Red, y = NIR, color = Distance)) +
+p_mining_scatter <- ggplot(df_mining_scatter,
+                           aes(x = Red, y = NIR, color = Distance)) +
   geom_point(alpha = 0.5, size = 0.8) +
-  scale_color_viridis_c(option = "magma", name = "Distance\nto Mining") +
+  scale_color_viridis_c(
+    option = "magma",
+    name = "Distance\nto Mining"
+  ) +
   geom_point(
     data = data.frame(
       x = fuzzy_2018$centers[mining_class, 3],
       y = fuzzy_2018$centers[mining_class, 4]
     ),
     aes(x = x, y = y),
-    shape = 23,
-    size = 6,
-    fill = "red",
-    color = "black",
-    stroke = 1.5
+    shape = 23, size = 6,
+    fill = "red", color = "black", stroke = 1.5
   ) +
   labs(
     title = "Mining Spectral Distance (2022)",
     subtitle = "Red diamond = 2018 mining centroid",
-    x = "Red Reflectance (0–255)",
-    y = "NIR Reflectance (0–255)"
+    x = "Red Reflectance (0-255)",
+    y = "NIR Reflectance (0-255)"
   ) +
   theme_minimal()
 
@@ -1006,56 +749,55 @@ combined <- (p_mining_scatter | p_density) +
 print(combined)
 
 ggsave(
-  "maps/mining_spectral_analysis.png",
-  combined,
-  width = 20,
-  height = 7,
-  dpi = 300,
-  bg = "white"
+  "maps/mining_spectral_analysis.png", combined, width = 20,
+  height = 7, dpi = 300, bg = "white"
 )
 
+# -----------------------------------------------------------------------------
+# 5.6 Forest Spectral Analysis
+# -----------------------------------------------------------------------------
 
-# ============================================================
-# 18. FOREST SPECTRAL ANALYSIS
-# ============================================================
-
+# Forest spectral scatter (2022)
 centroid_analysis$NDVI <- (centroid_analysis$NIR - centroid_analysis$Red) /
   (centroid_analysis$NIR + centroid_analysis$Red)
 
 df_forest_scatter <- data.frame(
-  Red = fuzzy_2022$scaled_values[, 3],
-  NIR = fuzzy_2022$scaled_values[, 4],
+  Red      = fuzzy_2022$scaled_values[, 3],
+  NIR      = fuzzy_2022$scaled_values[, 4],
   Distance = fuzzy_2022$raw_distances[, forest_class]
 )
 
 set.seed(42)
 if (nrow(df_forest_scatter) > 5000) {
-  df_forest_scatter <- df_forest_scatter[sample(nrow(df_forest_scatter), 5000), ]
+  df_forest_scatter <- df_forest_scatter[
+    sample(nrow(df_forest_scatter), 5000), ]
 }
 
-p_forest_scatter <- ggplot(df_forest_scatter, aes(x = Red, y = NIR, color = Distance)) +
+p_forest_scatter <- ggplot(df_forest_scatter,
+                           aes(x = Red, y = NIR, color = Distance)) +
   geom_point(alpha = 0.5, size = 0.8) +
-  scale_color_viridis_c(option = "viridis", name = "Distance \nto Forest") +
+  scale_color_viridis_c(
+    option = "viridis",
+    name = "Distance \nto Forest"
+  ) +
   geom_point(
     data = data.frame(
       x = fuzzy_2018$centers[forest_class, 3],
       y = fuzzy_2018$centers[forest_class, 4]
     ),
     aes(x = x, y = y),
-    shape = 23,
-    size = 6,
-    fill = "darkgreen",
-    color = "black",
-    stroke = 1.5
+    shape = 23, size = 6,
+    fill = "darkgreen", color = "black", stroke = 1.5
   ) +
   labs(
     title = "Forest Spectral Distance (2022)",
     subtitle = "Green diamond = 2018 forest centroid",
-    x = "Red Reflectance (0–255)",
-    y = "NIR Reflectance (0–255)"
+    x = "Red Reflectance (0-255)",
+    y = "NIR Reflectance (0-255)"
   ) +
   theme_minimal()
 
+# Forest distance density plot
 dist_data <- rbind(
   extract_distances(fuzzy_2018, "2018", forest_class, 5000),
   extract_distances(fuzzy_2020, "2020", forest_class, 5000),
@@ -1064,7 +806,11 @@ dist_data <- rbind(
 
 p_forest_density <- ggplot(dist_data, aes(x = Distance, fill = Year)) +
   geom_density(alpha = 0.6) +
-  scale_fill_manual(values = c("2018" = "#00441B", "2020" = "#238B45", "2022" = "#66C2A4")) +
+  scale_fill_manual(values = c(
+    "2018" = "#00441B",
+    "2020" = "#238B45",
+    "2022" = "#66C2A4"
+  )) +
   labs(
     title = "Spectral Distance to Forest Signature (2018-2022)",
     subtitle = "Using 2018 centroids as reference",
@@ -1096,12 +842,6 @@ combined_forest <- (p_forest_scatter | p_forest_density) +
 print(combined_forest)
 
 ggsave(
-  "maps/forest_spectral_analysis.png",
-  combined_forest,
-  width = 20,
-  height = 8,
-  dpi = 300,
-  bg = "white"
+  "maps/forest_spectral_analysis.png", combined_forest,
+  width = 20, height = 8, dpi = 300, bg = "white"
 )
-
-cat("Analysis complete. All maps and outputs have been saved.\n")
