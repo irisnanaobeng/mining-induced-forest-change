@@ -364,7 +364,7 @@ print(vegetation_classes)
     ## resolution  : 10, 10  (x, y)
     ## extent      : 6e+05, 709800, 690240, 800040  (xmin, xmax, ymin, ymax)
     ## coord. ref. : WGS 84 / UTM zone 30N (EPSG:32630) 
-    ## source      : spat_16a173369d33f_92695_kn9ay1v2CLquyTW.tif 
+    ## source      : spat_4aad285123a1_19117_kn9ay1v2CLquyTW.tif 
     ## varname     : T30NXN_20220126T102209_B08_10m 
     ## name        : classification 
     ## min value   :              1 
@@ -778,7 +778,7 @@ df_class$class <- factor(
   levels = c(1, 2, 3, 4, 5),
   labels = c(
     "Water Bodies",
-    "Active Mining",
+    "Mining Disturbance",
     "Healthy Vegetation",
     "Disturbed Vegetation",
     "Bare Soil"
@@ -786,15 +786,13 @@ df_class$class <- factor(
 )
 
 
-
 class_colors <- c(
-  "Water Bodies" = "#1f78b4",
-  "Active Mining" = "#e31a1c",
-  "Healthy Vegetation" = "#33a02c",
-  "Disturbed Vegetation" = "#FFC125",
-  "Bare Soil" = "#c2a25a"
+  "Water Bodies" = "#00BFFF",
+  "Healthy Vegetation" = "#004D40",
+  "Disturbed Vegetation" = "#81c784",
+  "Bare Soil" = "#e3d7c5",
+  "Mining Disturbance" = "#ff0000"
 )
-
 
 # Land cover map
 
@@ -807,16 +805,16 @@ im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = class)) +
   ) +
   coord_equal() +
   labs(
-    title = "Land Cover Classification Showing Mining Areas (2022)",
+    title = "Land Cover Classification Map of the Pra River Basin (2022)",
     x = "Longitude",
     y = "Latitude"
-  ) +
+) +
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
     axis.title = element_text(size = 12),
     axis.text = element_text(size = 10),
-    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid = element_blank(),
     legend.title = element_text(face = "bold"),
     legend.position = "right",
     plot.background = element_rect(fill = "white", color = NA)
@@ -848,7 +846,7 @@ ggsave(
 
     ##                  Class Percentage
     ## 1         Water Bodies        0.9
-    ## 2        Active Mining        3.2
+    ## 2   Mining Disturbance        3.2
     ## 3   Healthy Vegetation       31.5
     ## 4 Disturbed Vegetation       43.1
     ## 5            Bare Soil       21.4
