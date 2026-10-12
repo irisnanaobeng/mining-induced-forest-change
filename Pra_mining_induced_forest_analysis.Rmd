@@ -889,7 +889,7 @@ map_with_legend <- p_ndvi_diff | ndvi_legend +
   plot_layout(widths = c(3.2, 1))
 
 # -------------------------------
-# NDVI bar chart (CONSISTENT)
+# NDVI bar chart 
 # -------------------------------
 
 ndvi_change_clean <- df_change_stats[!is.na(df_change_stats$class), ]
@@ -991,7 +991,7 @@ df_class$class <- factor(
   levels = c(1, 2, 3, 4, 5),
   labels = c(
     "Water Bodies",
-    "Active Mining",
+    "Mining Disturbance",
     "Healthy Vegetation",
     "Disturbed Vegetation",
     "Bare Soil"
@@ -999,15 +999,13 @@ df_class$class <- factor(
 )
 
 
-
 class_colors <- c(
-  "Water Bodies" = "#1f78b4",
-  "Active Mining" = "#e31a1c",
-  "Healthy Vegetation" = "#33a02c",
-  "Disturbed Vegetation" = "#FFC125",
-  "Bare Soil" = "#c2a25a"
+  "Water Bodies" = "#00BFFF",
+  "Healthy Vegetation" = "#004D40",
+  "Disturbed Vegetation" = "#81c784",
+  "Bare Soil" = "#e3d7c5",
+  "Mining Disturbance" = "#ff0000"
 )
-
 
 # Land cover map
 
@@ -1020,16 +1018,16 @@ im_class_map <- ggplot(df_class, aes(x = x, y = y, fill = class)) +
   ) +
   coord_equal() +
   labs(
-    title = "Land Cover Classification Showing Mining Areas (2022)",
+    title = "Land Cover Classification Map of the Pra River Basin (2022)",
     x = "Longitude",
     y = "Latitude"
-  ) +
+) +
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
     axis.title = element_text(size = 12),
     axis.text = element_text(size = 10),
-    panel.grid = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid = element_blank(),
     legend.title = element_text(face = "bold"),
     legend.position = "right",
     plot.background = element_rect(fill = "white", color = NA)
@@ -1101,11 +1099,11 @@ p_mining <- ggplot() +
   coord_equal() +
 
   labs(
-    title = "Spatial Distribution of Active Mining Areas – Pra River Basin (2022)",
-    subtitle = "Red dots represent classified active mining pixels",
+    title = "Spatial Distribution of Mining Disturbance Areas – Pra River Basin (2022)",
+    subtitle = "Red dots indicate areas classified as mining disturbance",
     x = "Longitude",
     y = "Latitude"
-  ) +
+) +
 
   theme_minimal() +
   
@@ -1144,7 +1142,7 @@ df_class_stats$class <- factor(
   levels = c(1, 2, 3, 4, 5),
   labels = c(
     "Water Bodies",
-    "Active Mining",
+    "Mining Disturbance",
     "Healthy Vegetation",
     "Disturbed Vegetation",
     "Bare Soil"
